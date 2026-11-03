@@ -35,71 +35,75 @@
       visibility: hidden;
       pointer-events: none;
     }
-    @keyframes pulse-bar {
-      0%, 100% { transform: scaleX(0.35); opacity: 0.6; }
-      50% { transform: scaleX(1); opacity: 1; }
+    @keyframes steam-rise {
+      0% {
+        transform: translateY(6px) scaleX(0.9);
+        opacity: 0;
+      }
+      40% {
+        opacity: 0.85;
+      }
+      100% {
+        transform: translateY(-14px) scaleX(1.1);
+        opacity: 0;
+      }
     }
-    .launch-bar {
-      animation: pulse-bar 1.8s ease-in-out infinite;
-      transform-origin: left center;
+    @keyframes lid-simmer {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-1.5px) rotate(-1deg); }
+    }
+    .steam-1 {
+      animation: steam-rise 2s ease-in-out infinite;
+    }
+    .steam-2 {
+      animation: steam-rise 2s ease-in-out 0.6s infinite;
+    }
+    .steam-3 {
+      animation: steam-rise 2s ease-in-out 1.2s infinite;
+    }
+    .pot-lid {
+      animation: lid-simmer 1.6s ease-in-out infinite;
+      transform-origin: center;
     }
   </style>
 </head>
-<body class="min-h-screen bg-stone-100/80 text-stone-900 flex flex-col pb-24 md:pb-10 selection:bg-emerald-600 selection:text-white">
+<body class="min-h-screen bg-slate-100/80 text-slate-900 flex flex-col pb-24 md:pb-10 selection:bg-blue-600 selection:text-white">
 
   <!-- =====================================================================
-       LAUNCH SCREEN OVERLAY (FADES AFTER 3 SECONDS)
+       MINIMALIST LAUNCH SCREEN OVERLAY (FADES AFTER 3 SECONDS)
   ===================================================================== -->
-  <div id="launch-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center px-6 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-950 text-white select-none cursor-pointer">
-    <!-- Ambient Decorative Background Glow -->
-    <div class="absolute w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none"></div>
-    <div class="absolute w-64 h-64 rounded-full bg-amber-400/10 blur-2xl translate-y-12 pointer-events-none"></div>
-
-    <div class="relative z-10 flex flex-col items-center text-center max-w-sm">
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest bg-white/10 text-amber-300 border border-white/15 mb-4">
-        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-        <span>AI Family Meal Planner</span>
-      </span>
-
-      <!-- App Name -->
-      <h1 class="text-4xl sm:text-5xl font-black tracking-tight text-white drop-shadow-sm">
-        The Family Table
+  <div id="launch-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center px-6 bg-white text-[#0f2547] select-none cursor-pointer">
+    <div class="flex flex-col items-center text-center">
+      <!-- Navy Block Letters -->
+      <h1 class="text-2xl sm:text-4xl font-black uppercase tracking-[0.22em] text-[#0f2547]">
+        THE FAMILY TABLE
       </h1>
-      <p class="text-xs sm:text-sm font-medium text-emerald-200/90 mt-2">
-        Wholesome 800–1000 kcal dinners, planned together
-      </p>
 
-      <!-- Appropriate Icon Underneath the Name -->
-      <div class="mt-8 relative flex items-center justify-center">
-        <div class="absolute inset-0 rounded-3xl bg-amber-400/25 blur-xl animate-pulse"></div>
-        <div class="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-emerald-600 p-0.5 shadow-2xl">
-          <div class="w-full h-full bg-emerald-950/90 rounded-[22px] flex flex-col items-center justify-center gap-1.5">
-            <!-- Custom SVG Family Table & Chef Utensils Emblem -->
-            <svg class="w-16 h-16 text-amber-300" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Warm Plate Rim & Cloche Dome -->
-              <circle cx="32" cy="34" r="20" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4 3" class="text-emerald-400/60" />
-              <circle cx="32" cy="34" r="14" stroke="white" stroke-width="2.5" fill="rgba(16, 185, 129, 0.15)" />
-              <!-- Heart / Leaf Garnish in Center of Plate -->
-              <path d="M32 28C32 28 27 31 27 35C27 37.7614 29.2386 40 32 40C34.7614 40 37 37.7614 37 35C37 31 32 28 32 28Z" fill="#FBBF24" />
-              <!-- Left Fork -->
-              <path d="M12 20V30C12 31.6569 13.3431 33 15 33V48" stroke="#FBBF24" stroke-width="2.75" stroke-linecap="round" />
-              <path d="M18 20V30C18 31.6569 16.6569 33 15 33" stroke="#FBBF24" stroke-width="2.75" stroke-linecap="round" />
-              <path d="M15 20V29" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" />
-              <!-- Right Knife / Spoon -->
-              <path d="M50 20C47.7909 20 46 22.6863 46 26C46 29.3137 47.7909 32 50 32V48" stroke="#FBBF24" stroke-width="2.75" stroke-linecap="round" />
-              <path d="M50 20C52.2091 20 54 22.6863 54 26C54 29.3137 52.2091 32 50 32" stroke="#FBBF24" stroke-width="2.75" stroke-linecap="round" />
-              <!-- Top Chef Crown Sparkle -->
-              <path d="M32 9L33.5 13.5L38 15L33.5 16.5L32 21L30.5 16.5L26 15L30.5 13.5L32 9Z" fill="#FDE68A" />
-            </svg>
-          </div>
-        </div>
-      </div>
+      <!-- Minimalist Animated Steaming Pot Underneath -->
+      <div class="mt-8 flex items-center justify-center">
+        <svg class="w-24 h-24 text-[#0f2547]" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Animated Rising Steam Wisps -->
+          <path class="steam-1" d="M28 24C28 20 31 18 31 14C31 10 28 8 28 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          <path class="steam-2" d="M40 22C40 18 43 16 43 12C43 8 40 6 40 2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          <path class="steam-3" d="M52 24C52 20 55 18 55 14C55 10 52 8 52 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
 
-      <!-- Subtle Loading Progress Bar -->
-      <div class="mt-9 w-36 h-1.5 bg-white/15 rounded-full overflow-hidden">
-        <div class="h-full bg-amber-400 rounded-full launch-bar w-full"></div>
+          <!-- Simmering Pot Lid -->
+          <g class="pot-lid">
+            <!-- Lid Knob -->
+            <path d="M36 30H44" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            <path d="M40 30V34" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            <!-- Lid Dome/Rim -->
+            <path d="M18 35C18 34.4477 18.4477 34 19 34H61C61.5523 34 62 34.4477 62 35V37H18V35Z" fill="currentColor" />
+          </g>
+
+          <!-- Pot Side Handles -->
+          <path d="M12 42H17" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
+          <path d="M63 42H68" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
+
+          <!-- Minimalist Navy Pot Body -->
+          <path d="M18 39H62V54C62 61.732 55.732 68 48 68H32C24.268 68 18 61.732 18 54V39Z" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" />
+        </svg>
       </div>
-      <span class="mt-2.5 text-[11px] text-emerald-300/70">Tap anywhere to enter</span>
     </div>
   </div>
 
@@ -107,8 +111,8 @@
        TOAST NOTIFICATION BANNER
   ===================================================================== -->
   <div id="toast-container" class="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 z-50 md:max-w-md hidden pointer-events-none">
-    <div id="toast-box" class="pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border bg-stone-900 text-white border-stone-700">
-      <i data-lucide="sparkles" class="w-4 h-4 shrink-0 text-amber-300"></i>
+    <div id="toast-box" class="pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border bg-slate-900 text-white border-slate-700">
+      <i data-lucide="sparkles" class="w-4 h-4 shrink-0 text-sky-300"></i>
       <span id="toast-message" class="text-xs sm:text-sm font-semibold flex-1"></span>
       <button id="toast-close" class="p-1 hover:bg-white/10 rounded-lg">
         <i data-lucide="x" class="w-4 h-4"></i>
@@ -119,62 +123,54 @@
   <!-- =====================================================================
        STICKY HEADER
   ===================================================================== -->
-  <header class="bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30">
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-3.5 sm:px-6">
       <div class="flex items-center justify-between h-14 sm:h-16 gap-3">
         <!-- Brand Identity -->
         <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-sm shrink-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#0f2547] to-blue-700 flex items-center justify-center text-white shadow-sm shrink-0">
             <i data-lucide="utensils" class="w-5 h-5"></i>
           </div>
           <div class="truncate">
             <div class="flex items-center gap-1.5">
-              <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-stone-900 truncate">
+              <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-[#0f2547] truncate">
                 The Family Table
               </h1>
-              <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+              <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
                 800–1000 kcal
               </span>
             </div>
-            <p class="text-[11px] text-stone-500 truncate flex items-center gap-1">
-              <i data-lucide="sparkles" class="w-3 h-3 text-emerald-600 inline shrink-0"></i>
+            <p class="text-[11px] text-slate-500 truncate flex items-center gap-1">
+              <i data-lucide="sparkles" class="w-3 h-3 text-blue-600 inline shrink-0"></i>
               <span id="ai-engine-status">Firebase AI Logic Ready</span>
             </p>
           </div>
         </div>
 
-        <!-- Mobile Quick Action: Walmart Sparky AI List -->
-        <div class="flex items-center gap-2 md:hidden">
-          <button id="mobile-sparky-btn" class="px-2.5 py-1.5 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xs font-bold flex items-center gap-1 shadow-sm">
-            <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
-            <span>Sparky AI</span>
-          </button>
-        </div>
-
         <!-- Desktop Navigation Pills -->
-        <nav class="hidden md:flex items-center gap-1 bg-stone-100 p-1 rounded-2xl">
-          <button data-tab="meals" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-emerald-800 shadow-sm">
+        <nav class="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-2xl">
+          <button data-tab="meals" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-blue-800 shadow-sm">
             <i data-lucide="utensils" class="w-4 h-4"></i>
             <span>Meals</span>
-            <span id="desktop-meals-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">0</span>
+            <span id="desktop-meals-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800">0</span>
           </button>
 
-          <button data-tab="calendar" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-stone-600 hover:text-stone-900">
+          <button data-tab="calendar" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900">
             <i data-lucide="calendar" class="w-4 h-4"></i>
             <span>Calendar</span>
-            <span id="desktop-calendar-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">0/7</span>
+            <span id="desktop-calendar-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-sky-100 text-sky-800">0/7</span>
           </button>
 
-          <button data-tab="grocery" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-stone-600 hover:text-stone-900">
+          <button data-tab="grocery" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900">
             <i data-lucide="shopping-cart" class="w-4 h-4"></i>
             <span>Grocery</span>
-            <span id="desktop-grocery-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-stone-200 text-stone-800">0</span>
+            <span id="desktop-grocery-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-800">0</span>
           </button>
 
-          <button data-tab="history" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-stone-600 hover:text-stone-900">
+          <button data-tab="history" class="nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900">
             <i data-lucide="history" class="w-4 h-4"></i>
             <span>History & AI</span>
-            <span id="desktop-history-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-800">0</span>
+            <span id="desktop-history-badge" class="text-[11px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-800">0</span>
           </button>
         </nav>
       </div>
@@ -189,15 +185,15 @@
     <!-- TAB 1: DINNER MEAL PICKER -->
     <section id="tab-meals" class="space-y-4">
       <!-- Compact Mobile-First AI Generator Card -->
-      <div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-md space-y-3">
+      <div class="bg-gradient-to-br from-[#0f2547] via-blue-900 to-indigo-950 rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-md space-y-3">
         <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-200">
-            <i data-lucide="sparkles" class="w-4 h-4 text-amber-300 shrink-0"></i>
+          <div class="flex items-center gap-1.5 text-xs font-bold text-sky-200">
+            <i data-lucide="sparkles" class="w-4 h-4 text-sky-300 shrink-0"></i>
             <span>Firebase AI Meal Creator (800–1000 kcal)</span>
           </div>
 
-          <label class="inline-flex items-center gap-1.5 text-[11px] bg-white/10 px-2.5 py-1 rounded-full text-emerald-100 cursor-pointer">
-            <input id="use-taste-toggle" type="checkbox" checked class="rounded text-amber-400 focus:ring-0 w-3.5 h-3.5" />
+          <label class="inline-flex items-center gap-1.5 text-[11px] bg-white/10 px-2.5 py-1 rounded-full text-blue-100 cursor-pointer">
+            <input id="use-taste-toggle" type="checkbox" checked class="rounded text-sky-500 focus:ring-0 w-3.5 h-3.5" />
             <span>Use ★ Ratings</span>
           </label>
         </div>
@@ -205,17 +201,17 @@
         <!-- Search & Generate Input Row -->
         <div class="flex flex-col sm:flex-row gap-2">
           <div class="relative flex-1">
-            <i data-lucide="search" class="w-4 h-4 text-emerald-300 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <i data-lucide="search" class="w-4 h-4 text-sky-300 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
             <input
               id="ai-craving-input"
               type="text"
               placeholder="Craving? e.g. Honey garlic salmon, sheet-pan steak..."
-              class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-emerald-200/70 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-200/70 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
             />
           </div>
           <button
             id="ai-generate-meals-btn"
-            class="py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] disabled:opacity-60 text-stone-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition-all shrink-0"
+            class="py-2.5 px-4 rounded-xl bg-sky-400 hover:bg-sky-300 active:scale-[0.99] disabled:opacity-60 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition-all shrink-0"
           >
             <i data-lucide="sparkles" class="w-4 h-4"></i>
             <span id="ai-generate-meals-label">AI Generate 3 Meals</span>
@@ -224,16 +220,16 @@
 
         <!-- One-Tap Phone Prompt Chips -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-          <button data-prompt="Fast 25-minute one-pan skillet dinners with high protein and green veggies" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-emerald-100 whitespace-nowrap transition-colors shrink-0">
+          <button data-prompt="Fast 25-minute one-pan skillet dinners with high protein and crisp vegetables" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-blue-100 whitespace-nowrap transition-colors shrink-0">
             ⚡ 25-Min Skillet
           </button>
-          <button data-prompt="Lean steak and roasted potato dinners with charred vegetables" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-emerald-100 whitespace-nowrap transition-colors shrink-0">
+          <button data-prompt="Lean steak and roasted potato dinners with charred vegetables" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-blue-100 whitespace-nowrap transition-colors shrink-0">
             🥩 Steak & Potatoes
           </button>
-          <button data-prompt="Baked or pan-seared fish with hearty grains and roasted greens" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-emerald-100 whitespace-nowrap transition-colors shrink-0">
-            🐟 Crispy Fish & Greens
+          <button data-prompt="Baked or pan-seared fish with hearty grains and roasted vegetables" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-blue-100 whitespace-nowrap transition-colors shrink-0">
+            🐟 Crispy Fish & Veggies
           </button>
-          <button data-prompt="Family-friendly taco or rice bowls with high protein and colorful veggies" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-emerald-100 whitespace-nowrap transition-colors shrink-0">
+          <button data-prompt="Family-friendly taco or rice bowls with high protein and colorful veggies" class="craving-chip px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-blue-100 whitespace-nowrap transition-colors shrink-0">
             🌮 Kid-Friendly Bowls
           </button>
         </div>
@@ -241,12 +237,12 @@
         <!-- Compact Taste Profile Banner (Populated dynamically when profile exists) -->
         <div id="meals-taste-banner" class="hidden pt-2 border-t border-white/15 flex items-center justify-between gap-2 text-xs">
           <div class="flex items-center gap-2 min-w-0">
-            <i data-lucide="brain-circuit" class="w-4 h-4 text-amber-300 shrink-0"></i>
-            <span class="truncate text-emerald-100">
+            <i data-lucide="brain-circuit" class="w-4 h-4 text-sky-300 shrink-0"></i>
+            <span class="truncate text-blue-100">
               <strong class="text-white">Taste Match:</strong> <span id="meals-taste-headline"></span>
             </span>
           </div>
-          <button id="meals-match-profile-btn" class="px-2.5 py-1 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-bold text-[11px] whitespace-nowrap shrink-0">
+          <button id="meals-match-profile-btn" class="px-2.5 py-1 rounded-lg bg-sky-400/20 hover:bg-sky-400/30 text-sky-200 font-bold text-[11px] whitespace-nowrap shrink-0">
             + Match Profile
           </button>
         </div>
@@ -255,19 +251,19 @@
       <!-- Filter Pills & Local Search -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div id="meal-filter-pills" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-          <button data-filter="All" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-stone-900 text-white shadow-sm">All</button>
-          <button data-filter="AI Suggested" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-stone-600 border border-stone-200">AI Suggested</button>
-          <button data-filter="High Protein (55g+)" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-stone-600 border border-stone-200">High Protein (55g+)</button>
-          <button data-filter="High Fiber (10g+)" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-stone-600 border border-stone-200">High Fiber (10g+)</button>
+          <button data-filter="All" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-[#0f2547] text-white shadow-sm">All</button>
+          <button data-filter="AI Suggested" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-slate-600 border border-slate-200">AI Suggested</button>
+          <button data-filter="High Protein (55g+)" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-slate-600 border border-slate-200">High Protein (55g+)</button>
+          <button data-filter="High Fiber (10g+)" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-slate-600 border border-slate-200">High Fiber (10g+)</button>
         </div>
 
         <div class="relative w-full sm:w-60">
-          <i data-lucide="search" class="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
           <input
             id="local-meal-search"
             type="text"
             placeholder="Filter saved recipes..."
-            class="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            class="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
         </div>
       </div>
@@ -278,18 +274,18 @@
 
     <!-- TAB 2: WEEKLY CALENDAR -->
     <section id="tab-calendar" class="hidden space-y-4">
-      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 id="calendar-title" class="text-lg sm:text-xl font-extrabold text-stone-900">
+          <h2 id="calendar-title" class="text-lg sm:text-xl font-extrabold text-slate-900">
             Weekly Dinner Plan (0/7)
           </h2>
-          <p id="calendar-subtitle" class="text-xs text-stone-500">
+          <p id="calendar-subtitle" class="text-xs text-slate-500">
             Avg: <strong>— kcal</strong> • <strong>—g Protein</strong>
           </p>
         </div>
 
         <div class="flex items-center gap-2">
-          <button id="calendar-sync-grocery-btn" class="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+          <button id="calendar-sync-grocery-btn" class="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
             <i data-lucide="shopping-cart" class="w-4 h-4"></i>
             <span>Sync Week to Groceries</span>
           </button>
@@ -301,13 +297,13 @@
 
     <!-- TAB 3: GROCERY LIST + WALMART SPARKY AI -->
     <section id="tab-grocery" class="hidden space-y-4">
-      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-sm space-y-3.5">
+      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3.5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 id="grocery-title" class="text-lg sm:text-xl font-extrabold text-stone-900">
+            <h2 id="grocery-title" class="text-lg sm:text-xl font-extrabold text-slate-900">
               Grocery List (0 to order)
             </h2>
-            <p class="text-xs text-stone-500">
+            <p class="text-xs text-slate-500">
               Tap items to check them off as you order, or export directly to Walmart Sparky AI.
             </p>
           </div>
@@ -315,18 +311,18 @@
           <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
             <!-- Walmart Sparky AI Export Button -->
             <button id="open-sparky-modal-btn" class="col-span-2 sm:col-span-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm">
-              <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+              <i data-lucide="sparkles" class="w-4 h-4 text-sky-200"></i>
               <span>Walmart Sparky AI Text List</span>
             </button>
 
             <!-- Firebase AI Smart Consolidate Button -->
-            <button id="ai-merge-grocery-btn" class="py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1.5">
-              <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-emerald-700"></i>
+            <button id="ai-merge-grocery-btn" class="py-2 px-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-blue-900 border border-sky-200 text-xs font-bold flex items-center justify-center gap-1.5">
+              <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-blue-700"></i>
               <span id="ai-merge-grocery-label">AI Smart Merge</span>
             </button>
 
             <!-- Sync From Calendar -->
-            <button id="grocery-sync-calendar-btn" class="py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5">
+            <button id="grocery-sync-calendar-btn" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5">
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               <span>Sync Calendar</span>
             </button>
@@ -334,8 +330,8 @@
         </div>
 
         <!-- Custom Grocery Form Toggle -->
-        <div class="pt-2 border-t border-stone-100 flex items-center justify-between gap-2">
-          <button id="toggle-custom-grocery-btn" type="button" class="text-xs font-bold text-emerald-700 flex items-center gap-1">
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+          <button id="toggle-custom-grocery-btn" type="button" class="text-xs font-bold text-blue-700 flex items-center gap-1">
             <i data-lucide="plus" class="w-4 h-4"></i>
             <span id="toggle-custom-grocery-label">Add Extra Item to Order</span>
           </button>
@@ -348,16 +344,16 @@
 
         <!-- Custom Grocery Form -->
         <form id="custom-grocery-form" class="hidden pt-2 grid grid-cols-1 sm:grid-cols-12 gap-2">
-          <input id="custom-grocery-name" type="text" required placeholder="Item name (e.g., Milk, Paper Towels)..." class="sm:col-span-5 px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
-          <input id="custom-grocery-amount" type="text" placeholder="Qty (e.g., 2 bags)" class="sm:col-span-3 px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
-          <select id="custom-grocery-category" class="sm:col-span-2 px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white">
+          <input id="custom-grocery-name" type="text" required placeholder="Item name (e.g., Milk, Paper Towels)..." class="sm:col-span-5 px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+          <input id="custom-grocery-amount" type="text" placeholder="Qty (e.g., 2 bags)" class="sm:col-span-3 px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+          <select id="custom-grocery-category" class="sm:col-span-2 px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
             <option value="Produce & Veg">Produce & Veg</option>
             <option value="Meat & Seafood">Meat & Seafood</option>
             <option value="Dairy & Eggs">Dairy & Eggs</option>
             <option value="Pantry & Grains">Pantry & Grains</option>
             <option value="Spices & Condiments">Spices & Condiments</option>
           </select>
-          <button type="submit" class="sm:col-span-2 py-2 px-3 rounded-xl bg-emerald-700 text-white text-xs font-bold">
+          <button type="submit" class="sm:col-span-2 py-2 px-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold">
             Add
           </button>
         </form>
@@ -369,10 +365,10 @@
 
     <!-- TAB 4: MEAL HISTORY & 0-5 STAR AI TASTE EVALUATOR -->
     <section id="tab-history" class="hidden space-y-4">
-      <div class="bg-gradient-to-br from-stone-900 via-stone-800 to-emerald-950 rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-md space-y-4">
+      <div class="bg-gradient-to-br from-[#0f2547] via-slate-900 to-blue-950 rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-md space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="space-y-1">
-            <div class="inline-flex items-center gap-1.5 text-amber-300 text-xs font-bold">
+            <div class="inline-flex items-center gap-1.5 text-sky-300 text-xs font-bold">
               <i data-lucide="brain-circuit" class="w-4 h-4"></i>
               <span>Firebase AI Family Taste Evaluator</span>
             </div>
@@ -387,12 +383,12 @@
               <span>Log Meal</span>
             </button>
 
-            <button id="evaluate-taste-btn" class="py-2 px-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-60 text-stone-950 text-xs font-extrabold flex items-center gap-1.5">
+            <button id="evaluate-taste-btn" class="py-2 px-3.5 rounded-xl bg-sky-400 hover:bg-sky-300 disabled:opacity-60 text-slate-950 text-xs font-extrabold flex items-center gap-1.5">
               <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i>
               <span id="evaluate-taste-label">Evaluate Taste</span>
             </button>
 
-            <button id="evaluate-and-suggest-btn" class="py-2 px-3.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 disabled:opacity-60 text-stone-950 text-xs font-extrabold flex items-center gap-1.5">
+            <button id="evaluate-and-suggest-btn" class="py-2 px-3.5 rounded-xl bg-blue-500 hover:bg-blue-400 disabled:opacity-60 text-white text-xs font-extrabold flex items-center gap-1.5">
               <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
               <span>Evaluate & Suggest Meals</span>
             </button>
@@ -412,23 +408,23 @@
   <!-- =====================================================================
        FIXED MOBILE BOTTOM NAVIGATION BAR
   ===================================================================== -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 px-2 py-1.5 grid grid-cols-4 gap-1 shadow-lg">
-    <button data-tab="meals" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-emerald-700 bg-emerald-50/80 font-extrabold">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1.5 grid grid-cols-4 gap-1 shadow-lg">
+    <button data-tab="meals" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-blue-700 bg-blue-50/80 font-extrabold">
       <i data-lucide="utensils" class="w-5 h-5"></i>
       <span id="mobile-meals-label" class="text-[11px] mt-0.5">Meals (0)</span>
     </button>
 
-    <button data-tab="calendar" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-stone-500 font-medium">
+    <button data-tab="calendar" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-slate-500 font-medium">
       <i data-lucide="calendar" class="w-5 h-5"></i>
       <span id="mobile-calendar-label" class="text-[11px] mt-0.5">Plan (0/7)</span>
     </button>
 
-    <button data-tab="grocery" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-stone-500 font-medium">
+    <button data-tab="grocery" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-slate-500 font-medium">
       <i data-lucide="shopping-cart" class="w-5 h-5"></i>
       <span id="mobile-grocery-label" class="text-[11px] mt-0.5">Shop (0)</span>
     </button>
 
-    <button data-tab="history" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-stone-500 font-medium">
+    <button data-tab="history" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-slate-500 font-medium">
       <i data-lucide="history" class="w-5 h-5"></i>
       <span id="mobile-history-label" class="text-[11px] mt-0.5">Ratings (0)</span>
     </button>
@@ -437,22 +433,22 @@
   <!-- =====================================================================
        MODAL 0: WALMART SPARKY AI TEXT LIST GENERATOR
   ===================================================================== -->
-  <div id="sparky-modal" class="hidden fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200 p-5 sm:p-6 space-y-4">
+  <div id="sparky-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 p-5 sm:p-6 space-y-4">
       <div class="flex items-start justify-between gap-3">
         <div>
           <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800">
             <i data-lucide="sparkles" class="w-3 h-3"></i>
             <span>Walmart Sparky AI Assistant Ready</span>
           </span>
-          <h3 class="text-lg font-extrabold text-stone-900 mt-1">
+          <h3 class="text-lg font-extrabold text-slate-900 mt-1">
             Generate Text List for Walmart Sparky AI
           </h3>
-          <p class="text-xs text-stone-500">
+          <p class="text-xs text-slate-500">
             Copy and paste this list directly into Sparky AI on Walmart.com or the Walmart app to auto-fill your cart.
           </p>
         </div>
-        <button id="close-sparky-modal-btn" class="p-2 rounded-full bg-stone-100 text-stone-500">
+        <button id="close-sparky-modal-btn" class="p-2 rounded-full bg-slate-100 text-slate-500">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
@@ -463,21 +459,21 @@
           <button data-sparky-fmt="sparky-chat" class="sparky-fmt-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-colors bg-blue-600 text-white">
             Sparky Chat Prompt
           </button>
-          <button data-sparky-fmt="bullet" class="sparky-fmt-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200">
+          <button data-sparky-fmt="bullet" class="sparky-fmt-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200">
             Simple Bullets
           </button>
-          <button data-sparky-fmt="comma" class="sparky-fmt-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200">
+          <button data-sparky-fmt="comma" class="sparky-fmt-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200">
             Comma List
           </button>
         </div>
 
-        <button id="ai-sparky-convert-btn" class="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold flex items-center gap-1">
+        <button id="ai-sparky-convert-btn" class="px-3 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 text-blue-900 text-xs font-extrabold flex items-center gap-1">
           <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i>
           <span id="ai-sparky-convert-label">AI Convert to Store Sizes</span>
         </button>
       </div>
 
-      <label class="inline-flex items-center gap-2 text-xs text-stone-600 cursor-pointer">
+      <label class="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
         <input id="sparky-include-checked" type="checkbox" class="rounded text-blue-600" />
         <span>Include items already checked off</span>
       </label>
@@ -485,7 +481,7 @@
       <textarea
         id="sparky-textarea"
         rows="8"
-        class="w-full p-3.5 rounded-2xl bg-stone-50 border border-stone-200 text-xs sm:text-sm font-mono text-stone-800 focus:outline-none focus:ring-2 focus:ring-blue-600"
+        class="w-full p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600"
       ></textarea>
 
       <div class="flex items-center gap-2.5 pt-1">
@@ -500,72 +496,72 @@
   <!-- =====================================================================
        MODAL 1: FULL RECIPE DETAILS
   ===================================================================== -->
-  <div id="recipe-modal" class="hidden fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div id="recipe-modal-content" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200 p-5 sm:p-7 space-y-5"></div>
+  <div id="recipe-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="recipe-modal-content" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 p-5 sm:p-7 space-y-5"></div>
   </div>
 
   <!-- =====================================================================
        MODAL 2: ASSIGN MEAL TO DAY OF WEEK
   ===================================================================== -->
-  <div id="assign-modal" class="hidden fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div id="assign-modal-content" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl border border-stone-200"></div>
+  <div id="assign-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="assign-modal-content" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200"></div>
   </div>
 
   <!-- =====================================================================
        MODAL 3: LOG AS EATEN & RATE (0 - 5 STARS)
   ===================================================================== -->
-  <div id="rate-modal" class="hidden fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div id="rate-modal-content" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-stone-200"></div>
+  <div id="rate-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="rate-modal-content" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200"></div>
   </div>
 
   <!-- =====================================================================
        MODAL 4: MANUALLY LOG A PAST FAMILY MEAL
   ===================================================================== -->
-  <div id="manual-history-modal" class="hidden fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <form id="manual-history-form" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-stone-200">
+  <div id="manual-history-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <form id="manual-history-form" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-extrabold text-stone-900">Log a Past Family Meal</h3>
-        <button id="close-manual-history-btn" type="button" class="p-1.5 rounded-full bg-stone-100 text-stone-500">
+        <h3 class="text-lg font-extrabold text-slate-900">Log a Past Family Meal</h3>
+        <button id="close-manual-history-btn" type="button" class="p-1.5 rounded-full bg-slate-100 text-slate-500">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
       <div class="space-y-1">
-        <label class="text-xs font-bold text-stone-700 block">Meal Name</label>
-        <input id="manual-meal-name" type="text" required placeholder="e.g., Grilled Chimichurri Steak with Sweet Potato" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+        <label class="text-xs font-bold text-slate-700 block">Meal Name</label>
+        <input id="manual-meal-name" type="text" required placeholder="e.g., Grilled Chimichurri Steak with Sweet Potato" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="text-xs font-bold text-stone-700 block">Calories (kcal)</label>
-          <input id="manual-meal-calories" type="number" value="880" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+          <label class="text-xs font-bold text-slate-700 block">Calories (kcal)</label>
+          <input id="manual-meal-calories" type="number" value="880" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
         </div>
         <div>
-          <label class="text-xs font-bold text-stone-700 block">Protein (g)</label>
-          <input id="manual-meal-protein" type="number" value="52" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+          <label class="text-xs font-bold text-slate-700 block">Protein (g)</label>
+          <input id="manual-meal-protein" type="number" value="52" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
         </div>
       </div>
 
       <div class="space-y-1">
-        <label class="text-xs font-bold text-stone-700 block">Vegetables Included</label>
-        <input id="manual-meal-veggies" type="text" value="Roasted Asparagus & Bell Peppers" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+        <label class="text-xs font-bold text-slate-700 block">Vegetables Included</label>
+        <input id="manual-meal-veggies" type="text" value="Roasted Asparagus & Bell Peppers" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
       </div>
 
       <div class="space-y-1.5">
-        <label class="text-xs font-bold text-stone-700 block">Rating (0 to 5 Stars)</label>
+        <label class="text-xs font-bold text-slate-700 block">Rating (0 to 5 Stars)</label>
         <div id="manual-star-picker"></div>
       </div>
 
       <div class="space-y-1">
-        <label class="text-xs font-bold text-stone-700 block">Family Notes</label>
-        <textarea id="manual-meal-notes" rows="2" placeholder="What did you like or dislike about this meal?" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"></textarea>
+        <label class="text-xs font-bold text-slate-700 block">Family Notes</label>
+        <textarea id="manual-meal-notes" rows="2" placeholder="What did you like or dislike about this meal?" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm"></textarea>
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
-        <button id="cancel-manual-history-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100">
+        <button id="cancel-manual-history-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
           Cancel
         </button>
-        <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold">
+        <button type="submit" class="px-5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold">
           Log & Save Rating
         </button>
       </div>
@@ -798,7 +794,7 @@
       box.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border ${
         type === 'error'
           ? 'bg-rose-600 text-white border-rose-500'
-          : 'bg-stone-900 text-white border-stone-700'
+          : 'bg-[#0f2547] text-white border-blue-800'
       }`;
       container.classList.remove('hidden');
 
@@ -941,14 +937,14 @@
       document.querySelectorAll('.nav-tab-btn').forEach((btn) => {
         const isCurrent = btn.getAttribute('data-tab') === tabName;
         btn.className = `nav-tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-          isCurrent ? 'bg-white text-emerald-800 shadow-sm' : 'text-stone-600 hover:text-stone-900'
+          isCurrent ? 'bg-white text-blue-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
         }`;
       });
 
       document.querySelectorAll('.mobile-nav-btn').forEach((btn) => {
         const isCurrent = btn.getAttribute('data-tab') === tabName;
         btn.className = `mobile-nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors ${
-          isCurrent ? 'text-emerald-700 bg-emerald-50/80 font-extrabold' : 'text-stone-500 font-medium'
+          isCurrent ? 'text-blue-700 bg-blue-50/80 font-extrabold' : 'text-slate-500 font-medium'
         }`;
       });
     }
@@ -960,8 +956,8 @@
         <button type="button" data-star-group="${groupPrefix}" data-star-val="0"
           class="px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border ${
             r === 0
-              ? 'bg-rose-100 text-rose-700 border-rose-300 shadow-sm'
-              : 'bg-stone-100 text-stone-500 border-stone-200 hover:bg-stone-200'
+              ? 'bg-indigo-100 text-indigo-800 border-indigo-300 shadow-sm'
+              : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
           }">
           <span>👎 0★</span>
         </button>
@@ -971,13 +967,13 @@
         html += `
           <button type="button" data-star-group="${groupPrefix}" data-star-val="${star}"
             class="p-1 rounded-lg active:scale-125 transition-transform focus:outline-none text-lg leading-none ${
-              active ? 'text-amber-400' : 'text-stone-300 hover:text-amber-300'
+              active ? 'text-blue-600' : 'text-slate-300 hover:text-blue-400'
             }">
             ★
           </button>
         `;
       }
-      html += `<span class="ml-1 text-xs font-extrabold text-stone-700 bg-stone-100 px-2.5 py-1 rounded-full">${r}/5</span>`;
+      html += `<span class="ml-1 text-xs font-extrabold text-blue-900 bg-blue-50 px-2.5 py-1 rounded-full">${r}/5</span>`;
       html += `</div>`;
       return html;
     }
@@ -1012,9 +1008,9 @@
       const grid = document.getElementById('meals-grid');
       if (filtered.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-stone-200 space-y-2">
-            <p class="text-sm font-bold text-stone-700">No matching meals found</p>
-            <p class="text-xs text-stone-500">Try clearing your filter or use the Firebase AI Meal Creator above!</p>
+          <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-slate-200 space-y-2">
+            <p class="text-sm font-bold text-slate-700">No matching meals found</p>
+            <p class="text-xs text-slate-500">Try clearing your filter or use the Firebase AI Meal Creator above!</p>
           </div>
         `;
         return;
@@ -1038,73 +1034,73 @@
               : null;
 
           return `
-            <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm flex flex-col justify-between overflow-hidden">
+            <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm flex flex-col justify-between overflow-hidden">
               <div class="p-4 sm:p-5 space-y-3">
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex flex-wrap items-center gap-1.5">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-100 text-blue-900">
                       🔥 ${escapeHtml(meal.calories)} kcal
                     </span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-600">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
                       ⏱ ${escapeHtml(meal.prepTime || '30m')}
                     </span>
                     ${
                       meal.isAiGenerated
-                        ? `<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800">✨ AI</span>`
+                        ? `<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800">✨ AI</span>`
                         : ''
                     }
                     ${
                       avgHistoryRating !== null
-                        ? `<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">★ ${avgHistoryRating}</span>`
+                        ? `<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-blue-800 border border-sky-200">★ ${avgHistoryRating}</span>`
                         : ''
                     }
                   </div>
-                  <button data-delete-meal="${escapeHtml(meal.id)}" title="Delete recipe" class="text-stone-300 hover:text-rose-600 p-1 rounded-lg">
+                  <button data-delete-meal="${escapeHtml(meal.id)}" title="Delete recipe" class="text-slate-300 hover:text-rose-600 p-1 rounded-lg">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
                 </div>
 
                 <div data-open-recipe="${escapeHtml(meal.id)}" class="cursor-pointer group">
-                  <h3 class="text-base sm:text-lg font-extrabold text-stone-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                  <h3 class="text-base sm:text-lg font-extrabold text-slate-900 group-hover:text-blue-700 transition-colors leading-snug">
                     ${escapeHtml(meal.name)}
                   </h3>
-                  <p class="text-xs text-stone-500 line-clamp-2 mt-1 leading-relaxed">
+                  <p class="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
                     ${escapeHtml(meal.description)}
                   </p>
                 </div>
 
-                <div class="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50/80 px-3 py-1.5 rounded-xl border border-emerald-200/60">
-                  <span>🥕</span>
+                <div class="flex items-center gap-1.5 text-xs font-semibold text-blue-900 bg-sky-50/90 px-3 py-1.5 rounded-xl border border-sky-200/70">
+                  <i data-lucide="utensils" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
                   <span class="truncate">${escapeHtml(meal.veggieHighlight || '2+ cups vegetables')}</span>
                 </div>
 
-                <div class="grid grid-cols-4 gap-1.5 bg-stone-50 p-2.5 rounded-xl border border-stone-200/60 text-center">
+                <div class="grid grid-cols-4 gap-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 text-center">
                   <div>
-                    <span class="text-[10px] font-semibold text-stone-400 uppercase block">Protein</span>
-                    <span class="text-xs sm:text-sm font-extrabold text-rose-700">${escapeHtml(meal.macros?.protein || 50)}g</span>
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Protein</span>
+                    <span class="text-xs sm:text-sm font-extrabold text-[#0f2547]">${escapeHtml(meal.macros?.protein || 50)}g</span>
                   </div>
-                  <div class="border-l border-stone-200">
-                    <span class="text-[10px] font-semibold text-stone-400 uppercase block">Carbs</span>
-                    <span class="text-xs sm:text-sm font-extrabold text-amber-700">${escapeHtml(meal.macros?.carbs || 75)}g</span>
+                  <div class="border-l border-slate-200">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Carbs</span>
+                    <span class="text-xs sm:text-sm font-extrabold text-blue-700">${escapeHtml(meal.macros?.carbs || 75)}g</span>
                   </div>
-                  <div class="border-l border-stone-200">
-                    <span class="text-[10px] font-semibold text-stone-400 uppercase block">Fat</span>
+                  <div class="border-l border-slate-200">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Fat</span>
                     <span class="text-xs sm:text-sm font-extrabold text-sky-700">${escapeHtml(meal.macros?.fat || 35)}g</span>
                   </div>
-                  <div class="border-l border-stone-200">
-                    <span class="text-[10px] font-semibold text-stone-400 uppercase block">Fiber</span>
-                    <span class="text-xs sm:text-sm font-extrabold text-emerald-700">${escapeHtml(meal.macros?.fiber || 10)}g</span>
+                  <div class="border-l border-slate-200">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Fiber</span>
+                    <span class="text-xs sm:text-sm font-extrabold text-indigo-700">${escapeHtml(meal.macros?.fiber || 10)}g</span>
                   </div>
                 </div>
 
                 ${
                   plannedOnDays.length > 0
                     ? `<div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="text-[11px] font-bold text-emerald-700">On Calendar:</span>
+                        <span class="text-[11px] font-bold text-blue-700">On Calendar:</span>
                         ${plannedOnDays
                           .map(
                             (d) =>
-                              `<span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-bold">${d.slice(0, 3)}</span>`
+                              `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[11px] font-bold">${d.slice(0, 3)}</span>`
                           )
                           .join('')}
                       </div>`
@@ -1112,15 +1108,15 @@
                 }
               </div>
 
-              <div class="px-4 py-2.5 bg-stone-50 border-t border-stone-200/80 grid grid-cols-3 gap-2">
-                <button data-open-recipe="${escapeHtml(meal.id)}" class="py-2 px-2 rounded-xl border border-stone-200 bg-white active:bg-stone-100 text-stone-700 text-xs font-bold flex items-center justify-center gap-1">
+              <div class="px-4 py-2.5 bg-slate-50 border-t border-slate-200/80 grid grid-cols-3 gap-2">
+                <button data-open-recipe="${escapeHtml(meal.id)}" class="py-2 px-2 rounded-xl border border-slate-200 bg-white active:bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center gap-1">
                   <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
                   <span>Recipe</span>
                 </button>
-                <button data-rate-meal="${escapeHtml(meal.id)}" class="py-2 px-2 rounded-xl border border-amber-200 bg-amber-50 active:bg-amber-100 text-amber-900 text-xs font-bold flex items-center justify-center gap-1">
+                <button data-rate-meal="${escapeHtml(meal.id)}" class="py-2 px-2 rounded-xl border border-sky-200 bg-sky-50 active:bg-sky-100 text-blue-900 text-xs font-bold flex items-center justify-center gap-1">
                   <span>★ Rate</span>
                 </button>
-                <button data-assign-meal="${escapeHtml(meal.id)}" class="py-2 px-2 rounded-xl bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-1 shadow-sm">
+                <button data-assign-meal="${escapeHtml(meal.id)}" class="py-2 px-2 rounded-xl bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white text-xs font-bold flex items-center justify-center gap-1 shadow-sm">
                   <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
                   <span>Plan Day</span>
                 </button>
@@ -1155,33 +1151,33 @@
         const plannedMeal = weeklyPlan[day]?.meal;
         if (plannedMeal) {
           return `
-            <div class="rounded-2xl border bg-white border-stone-200 shadow-sm flex flex-col justify-between overflow-hidden">
+            <div class="rounded-2xl border bg-white border-slate-200 shadow-sm flex flex-col justify-between overflow-hidden">
               <div>
-                <div class="px-4 py-2.5 border-b border-stone-100 flex items-center justify-between bg-stone-50/70">
-                  <span class="font-extrabold text-sm text-stone-900">${day}</span>
-                  <span class="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-900">
+                <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+                  <span class="font-extrabold text-sm text-slate-900">${day}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-900">
                     ${escapeHtml(plannedMeal.calories)} kcal • ${escapeHtml(plannedMeal.macros?.protein || 50)}g P
                   </span>
                 </div>
                 <div class="p-4 space-y-2">
-                  <h3 data-open-planned-day="${day}" class="font-bold text-sm sm:text-base text-stone-900 leading-snug cursor-pointer hover:text-emerald-700">
+                  <h3 data-open-planned-day="${day}" class="font-bold text-sm sm:text-base text-slate-900 leading-snug cursor-pointer hover:text-blue-700">
                     ${escapeHtml(plannedMeal.name)}
                   </h3>
-                  <div class="text-xs text-emerald-700 font-medium flex items-center gap-1">
-                    <span>🥕</span>
+                  <div class="text-xs text-blue-700 font-medium flex items-center gap-1">
+                    <i data-lucide="utensils" class="w-3.5 h-3.5 shrink-0"></i>
                     <span class="truncate">${escapeHtml(plannedMeal.veggieHighlight || '')}</span>
                   </div>
                 </div>
               </div>
-              <div class="px-3.5 py-2.5 bg-stone-50 border-t border-stone-100 flex items-center justify-between gap-2">
-                <button data-open-planned-day="${day}" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-stone-600 hover:bg-stone-200/60">
+              <div class="px-3.5 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button data-open-planned-day="${day}" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200/60">
                   Recipe
                 </button>
                 <div class="flex items-center gap-1.5">
-                  <button data-eaten-day="${day}" class="px-3 py-1.5 rounded-xl bg-amber-100 active:bg-amber-200 text-amber-900 text-xs font-bold flex items-center gap-1">
+                  <button data-eaten-day="${day}" class="px-3 py-1.5 rounded-xl bg-sky-100 active:bg-sky-200 text-blue-900 text-xs font-bold flex items-center gap-1">
                     <span>✓ Eaten & Rate</span>
                   </button>
-                  <button data-clear-day="${day}" class="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg" title="Remove">
+                  <button data-clear-day="${day}" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg" title="Remove">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
                 </div>
@@ -1190,14 +1186,14 @@
           `;
         } else {
           return `
-            <div class="rounded-2xl border bg-white/60 border-dashed border-stone-300 flex flex-col justify-between overflow-hidden">
+            <div class="rounded-2xl border bg-white/60 border-dashed border-slate-300 flex flex-col justify-between overflow-hidden">
               <div>
-                <div class="px-4 py-2.5 border-b border-stone-100 flex items-center justify-between bg-stone-50/70">
-                  <span class="font-extrabold text-sm text-stone-900">${day}</span>
-                  <span class="text-[11px] text-stone-400 font-medium">Open Night</span>
+                <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+                  <span class="font-extrabold text-sm text-slate-900">${day}</span>
+                  <span class="text-[11px] text-slate-400 font-medium">Open Night</span>
                 </div>
                 <div class="p-3.5">
-                  <select data-quick-assign-day="${day}" class="w-full text-xs px-3 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-stone-700 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                  <select data-quick-assign-day="${day}" class="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
                     <option value="" selected disabled>+ Choose dinner for ${day}...</option>
                     ${meals
                       .map(
@@ -1234,10 +1230,10 @@
       const container = document.getElementById('grocery-categories-container');
       if (groceryItems.length === 0) {
         container.innerHTML = `
-          <div class="bg-white rounded-2xl p-8 text-center border border-stone-200 space-y-3">
-            <i data-lucide="shopping-cart" class="w-9 h-9 text-stone-300 mx-auto"></i>
-            <h3 class="text-base font-bold text-stone-800">No groceries on your list yet</h3>
-            <p class="text-xs text-stone-500 max-w-sm mx-auto">
+          <div class="bg-white rounded-2xl p-8 text-center border border-slate-200 space-y-3">
+            <i data-lucide="shopping-cart" class="w-9 h-9 text-slate-300 mx-auto"></i>
+            <h3 class="text-base font-bold text-slate-800">No groceries on your list yet</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">
               Tap "Sync Calendar" above or plan meals on the Meals tab to populate your weekly shopping list.
             </p>
           </div>
@@ -1259,39 +1255,39 @@
             .map(([category, items]) => {
               const catChecked = items.filter((i) => i.checked).length;
               return `
-                <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-                  <div class="px-4 py-2.5 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-                    <h3 class="font-extrabold text-xs uppercase tracking-wider text-stone-700">${escapeHtml(category)}</h3>
-                    <span class="text-[11px] font-bold text-stone-500">${catChecked}/${items.length} ordered</span>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-700">${escapeHtml(category)}</h3>
+                    <span class="text-[11px] font-bold text-slate-500">${catChecked}/${items.length} ordered</span>
                   </div>
-                  <div class="divide-y divide-stone-100">
+                  <div class="divide-y divide-slate-100">
                     ${items
                       .map(
                         (item) => `
-                        <div data-toggle-grocery="${escapeHtml(item.id)}" class="px-4 py-3 flex items-center justify-between gap-3 cursor-pointer active:bg-emerald-50 transition-colors ${
-                          item.checked ? 'bg-stone-50/70' : ''
+                        <div data-toggle-grocery="${escapeHtml(item.id)}" class="px-4 py-3 flex items-center justify-between gap-3 cursor-pointer active:bg-blue-50 transition-colors ${
+                          item.checked ? 'bg-slate-50/70' : ''
                         }">
                           <div class="flex items-center gap-3 min-w-0">
                             <span class="w-5 h-5 rounded-full flex items-center justify-center border ${
                               item.checked
-                                ? 'bg-emerald-600 border-emerald-600 text-white text-xs font-bold'
-                                : 'border-stone-300'
+                                ? 'bg-blue-600 border-blue-600 text-white text-xs font-bold'
+                                : 'border-slate-300'
                             } shrink-0">${item.checked ? '✓' : ''}</span>
                             <div class="min-w-0">
                               <p class="text-sm font-bold truncate ${
-                                item.checked ? 'line-through text-stone-400' : 'text-stone-900'
+                                item.checked ? 'line-through text-slate-400' : 'text-slate-900'
                               }">${escapeHtml(item.name)}</p>
-                              <p class="text-xs text-emerald-700 font-semibold truncate">
+                              <p class="text-xs text-blue-700 font-semibold truncate">
                                 ${escapeHtml(item.amount)}
                                 ${
                                   Array.isArray(item.fromMeals) && item.fromMeals.length > 0
-                                    ? `<span class="text-stone-400 font-normal"> • ${escapeHtml(item.fromMeals.join(', '))}</span>`
+                                    ? `<span class="text-slate-400 font-normal"> • ${escapeHtml(item.fromMeals.join(', '))}</span>`
                                     : ''
                                 }
                               </p>
                             </div>
                           </div>
-                          <button type="button" data-delete-grocery="${escapeHtml(item.id)}" class="p-1.5 text-stone-300 hover:text-rose-600 rounded-lg shrink-0">
+                          <button type="button" data-delete-grocery="${escapeHtml(item.id)}" class="p-1.5 text-slate-300 hover:text-rose-600 rounded-lg shrink-0">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                           </button>
                         </div>
@@ -1316,20 +1312,20 @@
         const firstPrompt = (tasteProfile.suggestedMealPrompts || [])[0] || '';
         profileContainer.innerHTML = `
           <div class="bg-white/10 rounded-xl p-3 space-y-1">
-            <span class="font-bold text-amber-300 block">${escapeHtml(tasteProfile.headline)}</span>
-            <p class="text-stone-200 line-clamp-3">${escapeHtml(tasteProfile.summary)}</p>
+            <span class="font-bold text-sky-300 block">${escapeHtml(tasteProfile.headline)}</span>
+            <p class="text-slate-200 line-clamp-3">${escapeHtml(tasteProfile.summary)}</p>
           </div>
           <div class="bg-white/10 rounded-xl p-3 space-y-1">
-            <span class="font-bold text-emerald-300 block">Loved (4–5★)</span>
-            <p class="text-stone-200"><strong>Proteins:</strong> ${escapeHtml((tasteProfile.preferredProteins || []).join(', '))}</p>
-            <p class="text-stone-200"><strong>Veggies:</strong> ${escapeHtml((tasteProfile.preferredVeggies || []).join(', '))}</p>
+            <span class="font-bold text-blue-300 block">Loved (4–5★)</span>
+            <p class="text-slate-200"><strong>Proteins:</strong> ${escapeHtml((tasteProfile.preferredProteins || []).join(', '))}</p>
+            <p class="text-slate-200"><strong>Veggies:</strong> ${escapeHtml((tasteProfile.preferredVeggies || []).join(', '))}</p>
           </div>
           <div class="bg-white/10 rounded-xl p-3 space-y-1.5">
-            <span class="font-bold text-rose-300 block">Avoid (0–2★)</span>
-            <p class="text-stone-200">${escapeHtml((tasteProfile.avoidList || []).join(', ') || 'None flagged')}</p>
+            <span class="font-bold text-indigo-300 block">Avoid (0–2★)</span>
+            <p class="text-slate-200">${escapeHtml((tasteProfile.avoidList || []).join(', ') || 'None flagged')}</p>
             ${
               firstPrompt
-                ? `<button data-try-prompt="${escapeHtml(firstPrompt)}" class="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-100 font-semibold flex items-center justify-between gap-1">
+                ? `<button data-try-prompt="${escapeHtml(firstPrompt)}" class="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-blue-500/30 hover:bg-blue-500/50 text-blue-100 font-semibold flex items-center justify-between gap-1">
                     <span class="truncate">Try: ${escapeHtml(firstPrompt)}</span>
                     <span>→</span>
                   </button>`
@@ -1344,10 +1340,10 @@
       const listContainer = document.getElementById('history-list-container');
       if (mealHistory.length === 0) {
         listContainer.innerHTML = `
-          <div class="bg-white rounded-2xl p-8 text-center border border-stone-200 space-y-2">
-            <i data-lucide="history" class="w-9 h-9 text-stone-300 mx-auto"></i>
-            <h3 class="text-base font-bold text-stone-800">No rated meals yet</h3>
-            <p class="text-xs text-stone-500 max-w-sm mx-auto">
+          <div class="bg-white rounded-2xl p-8 text-center border border-slate-200 space-y-2">
+            <i data-lucide="history" class="w-9 h-9 text-slate-300 mx-auto"></i>
+            <h3 class="text-base font-bold text-slate-800">No rated meals yet</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">
               Tap "★ Rate" on any meal card or mark a calendar dinner as eaten to rate it 0–5 stars.
             </p>
           </div>
@@ -1359,18 +1355,18 @@
       listContainer.innerHTML = mealHistory
         .map(
           (item) => `
-          <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="space-y-1">
               <div class="flex flex-wrap items-center gap-2">
-                <h3 class="font-extrabold text-sm sm:text-base text-stone-900">${escapeHtml(item.name)}</h3>
-                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900">${escapeHtml(item.calories)} kcal</span>
-                <span class="text-[11px] text-stone-400">${new Date(item.eatenAt || Date.now()).toLocaleDateString()}</span>
+                <h3 class="font-extrabold text-sm sm:text-base text-slate-900">${escapeHtml(item.name)}</h3>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-900">${escapeHtml(item.calories)} kcal</span>
+                <span class="text-[11px] text-slate-400">${new Date(item.eatenAt || Date.now()).toLocaleDateString()}</span>
               </div>
-              ${item.notes ? `<p class="text-xs italic text-stone-600">"${escapeHtml(item.notes)}"</p>` : ''}
+              ${item.notes ? `<p class="text-xs italic text-slate-600">"${escapeHtml(item.notes)}"</p>` : ''}
             </div>
-            <div class="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-100">
+            <div class="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
               ${renderStarRatingHTML(item.rating, `hist-${item.id}`)}
-              <button data-delete-history="${escapeHtml(item.id)}" class="p-1.5 text-stone-300 hover:text-rose-600 rounded-lg">
+              <button data-delete-history="${escapeHtml(item.id)}" class="p-1.5 text-slate-300 hover:text-rose-600 rounded-lg">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
@@ -1890,53 +1886,53 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
         <div class="flex items-start justify-between gap-4">
           <div class="space-y-1.5">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900">
                 ${escapeHtml(meal.calories)} kcal / serving
               </span>
-              <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+              <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-900">
                 ${escapeHtml(meal.veggieHighlight)}
               </span>
             </div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900">${escapeHtml(meal.name)}</h2>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">${escapeHtml(meal.name)}</h2>
           </div>
-          <button id="close-recipe-modal" class="p-2 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600">
+          <button id="close-recipe-modal" class="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
 
-        <p class="text-sm text-stone-600 leading-relaxed">${escapeHtml(meal.description)}</p>
+        <p class="text-sm text-slate-600 leading-relaxed">${escapeHtml(meal.description)}</p>
 
-        <div class="grid grid-cols-4 gap-3 bg-stone-50 p-4 rounded-2xl border border-stone-200 text-center">
+        <div class="grid grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
           <div>
-            <span class="text-xs text-stone-500 block">Protein</span>
-            <span class="text-lg font-extrabold text-rose-700">${escapeHtml(meal.macros?.protein)}g</span>
+            <span class="text-xs text-slate-500 block">Protein</span>
+            <span class="text-lg font-extrabold text-[#0f2547]">${escapeHtml(meal.macros?.protein)}g</span>
           </div>
           <div>
-            <span class="text-xs text-stone-500 block">Carbs</span>
-            <span class="text-lg font-extrabold text-amber-700">${escapeHtml(meal.macros?.carbs)}g</span>
+            <span class="text-xs text-slate-500 block">Carbs</span>
+            <span class="text-lg font-extrabold text-blue-700">${escapeHtml(meal.macros?.carbs)}g</span>
           </div>
           <div>
-            <span class="text-xs text-stone-500 block">Fats</span>
+            <span class="text-xs text-slate-500 block">Fats</span>
             <span class="text-lg font-extrabold text-sky-700">${escapeHtml(meal.macros?.fat)}g</span>
           </div>
           <div>
-            <span class="text-xs text-stone-500 block">Fiber</span>
-            <span class="text-lg font-extrabold text-emerald-700">${escapeHtml(meal.macros?.fiber)}g</span>
+            <span class="text-xs text-slate-500 block">Fiber</span>
+            <span class="text-lg font-extrabold text-indigo-700">${escapeHtml(meal.macros?.fiber)}g</span>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-3">
-            <h3 class="font-bold text-sm uppercase tracking-wider text-stone-700">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-slate-700">
               Ingredients (${escapeHtml(meal.servings || 4)} Servings)
             </h3>
             <ul class="space-y-2 text-sm">
               ${(meal.ingredients || [])
                 .map(
                   (ing) => `
-                  <li class="flex items-center justify-between py-1.5 border-b border-stone-100">
-                    <span class="text-stone-800 font-medium">${escapeHtml(ing.name)}</span>
-                    <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">${escapeHtml(ing.amount)}</span>
+                  <li class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                    <span class="text-slate-800 font-medium">${escapeHtml(ing.name)}</span>
+                    <span class="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">${escapeHtml(ing.amount)}</span>
                   </li>
                 `
                 )
@@ -1945,13 +1941,13 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
           </div>
 
           <div class="space-y-3">
-            <h3 class="font-bold text-sm uppercase tracking-wider text-stone-700">Preparation Steps</h3>
-            <ol class="space-y-3 text-sm text-stone-700">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-slate-700">Preparation Steps</h3>
+            <ol class="space-y-3 text-sm text-slate-700">
               ${(meal.instructions || [])
                 .map(
                   (step, idx) => `
                   <li class="flex items-start gap-2.5">
-                    <span class="w-5 h-5 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
+                    <span class="w-5 h-5 rounded-full bg-blue-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
                     <span class="leading-relaxed">${escapeHtml(step)}</span>
                   </li>
                 `
@@ -1961,8 +1957,8 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
           </div>
         </div>
 
-        <div class="pt-4 border-t border-stone-200 flex flex-wrap items-center justify-end gap-3">
-          <button id="recipe-modal-plan-btn" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold flex items-center gap-2">
+        <div class="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-end gap-3">
+          <button id="recipe-modal-plan-btn" class="px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold flex items-center gap-2">
             <i data-lucide="calendar-plus" class="w-4 h-4"></i>
             <span>Plan This Meal on Calendar</span>
           </button>
@@ -1989,26 +1985,26 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
       content.innerHTML = `
         <div class="flex items-start justify-between gap-3">
           <div>
-            <span class="text-xs font-bold text-emerald-700 uppercase">Schedule Family Dinner</span>
-            <h3 class="text-lg font-extrabold text-stone-900 mt-0.5">${escapeHtml(meal.name)}</h3>
+            <span class="text-xs font-bold text-blue-700 uppercase">Schedule Family Dinner</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-0.5">${escapeHtml(meal.name)}</h3>
           </div>
-          <button id="close-assign-modal" class="p-1.5 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200">
+          <button id="close-assign-modal" class="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
-        <p class="text-xs text-stone-500">
+        <p class="text-xs text-slate-500">
           Select a day of the week below. All recipe ingredients will also be synced to your Grocery List automatically.
         </p>
         <div class="grid grid-cols-1 gap-2">
           ${DAYS_OF_WEEK.map((day) => {
             const existing = weeklyPlan[day]?.meal;
             return `
-              <button data-confirm-assign-day="${day}" class="w-full px-4 py-3 rounded-2xl border border-stone-200 hover:border-emerald-600 hover:bg-emerald-50/50 flex items-center justify-between transition-all text-left">
+              <button data-confirm-assign-day="${day}" class="w-full px-4 py-3 rounded-2xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 flex items-center justify-between transition-all text-left">
                 <div>
-                  <span class="font-bold text-sm text-stone-900 block">${day}</span>
-                  ${existing ? `<span class="text-xs text-stone-400">Currently: ${escapeHtml(existing.name)}</span>` : ''}
+                  <span class="font-bold text-sm text-slate-900 block">${day}</span>
+                  ${existing ? `<span class="text-xs text-slate-400">Currently: ${escapeHtml(existing.name)}</span>` : ''}
                 </div>
-                <span class="text-xs font-bold text-emerald-700">Assign →</span>
+                <span class="text-xs font-bold text-blue-700">Assign →</span>
               </button>
             `;
           }).join('')}
@@ -2042,29 +2038,29 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
       content.innerHTML = `
         <div class="flex items-start justify-between">
           <div>
-            <span class="text-xs font-bold text-amber-600 uppercase">Family Meal Rating (0–5 Stars)</span>
-            <h3 class="text-lg font-extrabold text-stone-900 mt-0.5">${escapeHtml(rateModalState.meal.name)}</h3>
+            <span class="text-xs font-bold text-blue-600 uppercase">Family Meal Rating (0–5 Stars)</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-0.5">${escapeHtml(rateModalState.meal.name)}</h3>
           </div>
-          <button id="close-rate-modal" class="p-1.5 rounded-full bg-stone-100 text-stone-500">
+          <button id="close-rate-modal" class="p-1.5 rounded-full bg-slate-100 text-slate-500">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
 
         <div class="space-y-2">
-          <label class="text-xs font-bold text-stone-700 block">
+          <label class="text-xs font-bold text-slate-700 block">
             How much did the family enjoy this meal? (0 = Never again, 5 = Loved it!)
           </label>
           ${renderStarRatingHTML(rateModalState.rating, 'modal-rate')}
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-stone-700 block">Tasting Notes for AI Chef (Optional)</label>
-          <textarea id="rate-modal-notes" rows="3" placeholder="e.g., Kids loved the honey-garlic sauce and crispy broccoli!" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">${escapeHtml(rateModalState.notes)}</textarea>
+          <label class="text-xs font-bold text-slate-700 block">Tasting Notes for AI Chef (Optional)</label>
+          <textarea id="rate-modal-notes" rows="3" placeholder="e.g., Kids loved the honey-garlic sauce and crispy broccoli!" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">${escapeHtml(rateModalState.notes)}</textarea>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
-          <button id="cancel-rate-modal" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100">Cancel</button>
-          <button id="save-rate-modal" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <button id="cancel-rate-modal" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button id="save-rate-modal" class="px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm">
             <span>✓ Save Rating to History</span>
           </button>
         </div>
@@ -2120,7 +2116,7 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
         document.querySelectorAll('.filter-pill').forEach((p) => {
           const active = p.getAttribute('data-filter') === activeTagFilter;
           p.className = `filter-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            active ? 'bg-stone-900 text-white shadow-sm' : 'bg-white text-stone-600 border border-stone-200'
+            active ? 'bg-[#0f2547] text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200'
           }`;
         });
         renderMealsTab();
@@ -2176,9 +2172,8 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
       showToast(`Cleared ${checked.length} checked item(s).`);
     });
 
-    // Sparky Modal Events
+    // Sparky Modal Events (Grocery Tab Only)
     document.getElementById('open-sparky-modal-btn')?.addEventListener('click', openSparkyModal);
-    document.getElementById('mobile-sparky-btn')?.addEventListener('click', openSparkyModal);
     document.getElementById('close-sparky-modal-btn')?.addEventListener('click', () => {
       document.getElementById('sparky-modal').classList.add('hidden');
     });
