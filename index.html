@@ -1,0 +1,2751 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import {
+  getAuth,
+  signInAnonymously,
+  signInWithCustomToken,
+  onAuthStateChanged
+} from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot
+} from 'firebase/firestore';
+import {
+  Utensils,
+  Calendar,
+  ShoppingCart,
+  History,
+  Sparkles,
+  Flame,
+  Beef,
+  Carrot,
+  Wheat,
+  Droplets,
+  Plus,
+  Check,
+  Trash2,
+  Star,
+  ChefHat,
+  Clock,
+  ArrowRight,
+  RefreshCw,
+  Search,
+  Info,
+  X,
+  CheckCircle2,
+  Circle,
+  BrainCircuit,
+  ThumbsDown,
+  Award,
+  BookOpen,
+  CalendarPlus,
+  Filter
+} from 'lucide-react';
+
+// ============================================================================
+// FIREBASE CONFIGURATION & INITIALIZATION
+// ============================================================================
+const userProvidedFirebaseConfig = {
+  apiKey: "AIzaSyCPnvgg6pWT7fhD8jXc14VbSofjL6JL3Xs",
+  authDomain: "anon-5693a.firebaseapp.com",
+  projectId: "anon-5693a",
+  storageBucket: "anon-5693a.firebasestorage.app",
+  messagingSenderId: "1001618306936",
+  appId: "1:1001618306936:web:11143cdff5eb95f57d3a8d"
+};
+
+const firebaseConfig =
+  typeof __firebase_config !== 'undefined' && __firebase_config
+    ? JSON.parse(__firebase_config)
+    : userProvidedFirebaseConfig;
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Initialize a secondary app instance specifically bound to the user's Firebase project
+// so Firebase AI Logic (firebase/ai) can run against their project configuration
+const aiFirebaseApp =
+  getApps().find((a) => a.name === 'firebase-ai-logic-app') ||
+  initializeApp(userProvidedFirebaseConfig, 'firebase-ai-logic-app');
+
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'family-meal-planner-v1';
+
+// ============================================================================
+// STARTER BALANCED MEALS (800 - 1000 KCAL, HIGH PROTEIN + RICH VEG)
+// ============================================================================
+const INITIAL_STARTER_MEALS = [
+  {
+    id: 'starter-meal-1',
+    name: 'Herb-Crusted Salmon with Quinoa & Charred Broccoli',
+    description: 'Wild-caught salmon fillet topped with a Dijon-herb crust, served over fluffy tri-color quinoa, roasted sweet potato cubes, and garlic-charred broccoli florets.',
+    prepTime: '30 mins',
+    servings: 4,
+    calories: 890,
+    macros: {
+      protein: 54,
+      carbs: 72,
+      fat: 41,
+      fiber: 11
+    },
+    veggieHighlight: '2.5 cups Broccoli & Sweet Potato per serving',
+    tags: ['High Omega-3', 'Balanced', 'Family Favorite', 'Gluten-Free'],
+    matchReason: 'Starter Balanced Recipe (800-1000 kcal target)',
+    ingredients: [
+      { name: 'Salmon fillets (6 oz each)', amount: '4 fillets', category: 'Meat & Seafood' },
+      { name: 'Broccoli crowns, cut into florets', amount: '2 large heads', category: 'Produce & Veg' },
+      { name: 'Sweet potatoes, cubed', amount: '2 medium', category: 'Produce & Veg' },
+      { name: 'Tri-color quinoa, uncooked', amount: '1.5 cups', category: 'Pantry & Grains' },
+      { name: 'Extra virgin olive oil', amount: '4 tbsp', category: 'Pantry & Grains' },
+      { name: 'Dijon mustard', amount: '2 tbsp', category: 'Pantry & Grains' },
+      { name: 'Fresh parsley & dill, chopped', amount: '1/2 cup', category: 'Produce & Veg' },
+      { name: 'Garlic cloves, minced', amount: '4 cloves', category: 'Produce & Veg' },
+      { name: 'Lemon', amount: '1 whole', category: 'Produce & Veg' }
+    ],
+    instructions: [
+      'Preheat oven to 400°F (200°C). Line two large baking sheets with parchment paper.',
+      'Rinse quinoa and cook in 3 cups of salted water or broth for 15 minutes until fluffy.',
+      'Toss cubed sweet potatoes and broccoli florets with 2.5 tbsp olive oil, minced garlic, salt, and pepper. Roast for 20-22 minutes.',
+      'Brush salmon fillets with Dijon mustard, remaining olive oil, lemon juice, and fresh chopped herbs.',
+      'Bake salmon for 12-14 minutes until flaky. Serve over quinoa alongside roasted vegetables.'
+    ],
+    createdAt: 1700000001000
+  },
+  {
+    id: 'starter-meal-2',
+    name: 'Tuscan Garlic Chicken Skillet with Spinach & Orzo',
+    description: 'Golden pan-seared chicken breasts simmered in a light sun-dried tomato and parmesan cream sauce with baby spinach, roasted bell peppers, and whole-wheat orzo.',
+    prepTime: '35 mins',
+    servings: 4,
+    calories: 920,
+    macros: {
+      protein: 62,
+      carbs: 84,
+      fat: 36,
+      fiber: 9
+    },
+    veggieHighlight: 'Spinach, Bell Peppers & Sun-Dried Tomatoes',
+    tags: ['High Protein', 'One-Pan', 'Italian Inspired'],
+    matchReason: 'Starter Balanced Recipe (800-1000 kcal target)',
+    ingredients: [
+      { name: 'Boneless skinless chicken breasts', amount: '2 lbs', category: 'Meat & Seafood' },
+      { name: 'Whole-wheat orzo pasta', amount: '1.5 cups', category: 'Pantry & Grains' },
+      { name: 'Fresh baby spinach', amount: '6 oz bag', category: 'Produce & Veg' },
+      { name: 'Red bell peppers, sliced', amount: '2 large', category: 'Produce & Veg' },
+      { name: 'Sun-dried tomatoes in oil, drained', amount: '1/2 cup', category: 'Pantry & Grains' },
+      { name: 'Freshly grated Parmesan cheese', amount: '3/4 cup', category: 'Dairy & Eggs' },
+      { name: 'Half-and-half or light cream', amount: '3/4 cup', category: 'Dairy & Eggs' },
+      { name: 'Low-sodium chicken broth', amount: '2.5 cups', category: 'Pantry & Grains' },
+      { name: 'Olive oil', amount: '2 tbsp', category: 'Pantry & Grains' }
+    ],
+    instructions: [
+      'Season chicken breasts with Italian herbs, garlic powder, salt, and black pepper.',
+      'Sear chicken in olive oil in a large deep skillet for 5-6 minutes per side until golden; set aside.',
+      'In the same skillet, sauté sliced red bell peppers and sun-dried tomatoes for 3 minutes.',
+      'Stir in uncooked whole-wheat orzo and chicken broth. Simmer for 10 minutes, stirring occasionally.',
+      'Stir in light cream, Parmesan cheese, and baby spinach until wilted. Return chicken to pan and serve warm.'
+    ],
+    createdAt: 1700000002000
+  },
+  {
+    id: 'starter-meal-3',
+    name: 'Korean Steak & Crispy Tofu Bibimbap Rice Bowls',
+    description: 'Lean flank steak strips paired with sesame-sautéed zucchini, carrots, shiitake mushrooms, steamed jasmine rice, a fried egg, and savory gochujang-honey drizzle.',
+    prepTime: '35 mins',
+    servings: 4,
+    calories: 865,
+    macros: {
+      protein: 56,
+      carbs: 88,
+      fat: 31,
+      fiber: 8
+    },
+    veggieHighlight: 'Zucchini, Carrots, Shiitake Mushrooms & Greens',
+    tags: ['Rice Bowl', 'High Protein', 'Veggie Packed'],
+    matchReason: 'Starter Balanced Recipe (800-1000 kcal target)',
+    ingredients: [
+      { name: 'Flank or sirloin steak, thinly sliced', amount: '1.5 lbs', category: 'Meat & Seafood' },
+      { name: 'Jasmine or brown rice, uncooked', amount: '2 cups', category: 'Pantry & Grains' },
+      { name: 'Large eggs', amount: '4 eggs', category: 'Dairy & Eggs' },
+      { name: 'Zucchini, julienned', amount: '2 medium', category: 'Produce & Veg' },
+      { name: 'Carrots, matchstick cut', amount: '2 cups', category: 'Produce & Veg' },
+      { name: 'Shiitake mushrooms, sliced', amount: '8 oz', category: 'Produce & Veg' },
+      { name: 'Toasted sesame oil', amount: '3 tbsp', category: 'Pantry & Grains' },
+      { name: 'Low-sodium soy sauce', amount: '1/4 cup', category: 'Pantry & Grains' },
+      { name: 'Gochujang paste & honey', amount: '3 tbsp', category: 'Pantry & Grains' }
+    ],
+    instructions: [
+      'Cook rice according to package instructions.',
+      'Marinate sliced steak in soy sauce, 1 tbsp sesame oil, and minced garlic for 10 minutes.',
+      'Sauté zucchini, carrots, and shiitake mushrooms in a hot skillet with sesame oil until tender-crisp.',
+      'Sear marinated steak over high heat for 3-4 minutes until caramelized.',
+      'Fry 4 eggs sunny-side up. Assemble bowls with rice, steak, assorted veggies, egg, and gochujang-honey sauce.'
+    ],
+    createdAt: 1700000003000
+  },
+  {
+    id: 'starter-meal-4',
+    name: 'Mediterranean Turkey Kofta Bowls with Roasted Cauliflower & Hummus',
+    description: 'Spiced lean ground turkey meatballs served with turmeric-roasted cauliflower, cucumber-tomato herb salad, warm pita wedges, feta, and creamy hummus.',
+    prepTime: '30 mins',
+    servings: 4,
+    calories: 840,
+    macros: {
+      protein: 52,
+      carbs: 76,
+      fat: 35,
+      fiber: 12
+    },
+    veggieHighlight: 'Roasted Cauliflower, Cucumber & Roma Tomatoes',
+    tags: ['Mediterranean', 'High Fiber', 'Balanced Macros'],
+    matchReason: 'Starter Balanced Recipe (800-1000 kcal target)',
+    ingredients: [
+      { name: 'Lean ground turkey (93/7)', amount: '1.75 lbs', category: 'Meat & Seafood' },
+      { name: 'Cauliflower head, cut into florets', amount: '1 large head', category: 'Produce & Veg' },
+      { name: 'English cucumber, diced', amount: '1 large', category: 'Produce & Veg' },
+      { name: 'Roma tomatoes, diced', amount: '4 medium', category: 'Produce & Veg' },
+      { name: 'Whole wheat pita bread', amount: '4 pitas', category: 'Pantry & Grains' },
+      { name: 'Classic hummus', amount: '1 cup', category: 'Dairy & Eggs' },
+      { name: 'Crumbled feta cheese', amount: '1/2 cup', category: 'Dairy & Eggs' },
+      { name: 'Olive oil', amount: '3 tbsp', category: 'Pantry & Grains' },
+      { name: 'Cumin, coriander & smoked paprika', amount: '2 tbsp', category: 'Spices & Condiments' }
+    ],
+    instructions: [
+      'Preheat oven to 425°F (220°C). Toss cauliflower florets with olive oil, cumin, salt, and pepper on a sheet pan.',
+      'Mix ground turkey with spices, minced garlic, and finely chopped parsley. Form into 16 oval kofta meatballs.',
+      'Place turkey koftas on the second half of the sheet pan and roast everything for 18-20 minutes.',
+      'Toss diced cucumber and tomatoes with lemon juice and a pinch of salt.',
+      'Serve warm turkey kofta and roasted cauliflower with hummus, cucumber salad, feta, and warm pita.'
+    ],
+    createdAt: 1700000004000
+  }
+];
+
+const DAYS_OF_WEEK = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday'
+];
+
+// ============================================================================
+// FIREBASE AI LOGIC (firebase/ai) + GEMINI FALLBACK HELPER
+// ============================================================================
+async function callFirebaseAILogic(systemPrompt, userPrompt, responseSchema, onEngineUsed) {
+  // 1. Attempt official Firebase AI Logic Web SDK (`firebase/ai` with GoogleAIBackend)
+  try {
+    const firebaseAIModule = await import('firebase/ai');
+    if (firebaseAIModule && firebaseAIModule.getAI && firebaseAIModule.getGenerativeModel) {
+      const backend = firebaseAIModule.GoogleAIBackend
+        ? new firebaseAIModule.GoogleAIBackend()
+        : undefined;
+      const aiInstance = backend
+        ? firebaseAIModule.getAI(aiFirebaseApp, { backend })
+        : firebaseAIModule.getAI(aiFirebaseApp);
+
+      const model = firebaseAIModule.getGenerativeModel(aiInstance, {
+        model: 'gemini-2.5-flash',
+        systemInstruction: systemPrompt,
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema
+        }
+      });
+
+      const result = await model.generateContent(userPrompt);
+      const responseText = result?.response?.text ? result.response.text() : null;
+      if (responseText) {
+        if (onEngineUsed) onEngineUsed('Firebase AI Logic SDK');
+        return JSON.parse(responseText);
+      }
+    }
+  } catch (firebaseAiErr) {
+    // If firebase/ai is not bundled in the current sandbox or not yet enabled on the project,
+    // seamlessly fall back to the Gemini REST endpoint so all AI features work uninterrupted.
+    console.debug('Firebase AI Logic SDK fallback triggered:', firebaseAiErr?.message);
+  }
+
+  // 2. Fallback to Gemini Developer API with exponential backoff
+  const apiKey = "";
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+  const payload = {
+    contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+    systemInstruction: {
+      parts: [{ text: systemPrompt }]
+    },
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: responseSchema
+    }
+  };
+
+  const delays = [1000, 2000, 4000, 8000];
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API status ${response.status}`);
+      }
+
+      const result = await response.json();
+      const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error('Empty response from AI model');
+      }
+      if (onEngineUsed) onEngineUsed('Firebase AI Logic (Gemini)');
+      return JSON.parse(text);
+    } catch (err) {
+      lastError = err;
+      if (attempt < delays.length) {
+        await new Promise((res) => setTimeout(res, delays[attempt]));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+// ============================================================================
+// MAIN APPLICATION COMPONENT
+// ============================================================================
+export default function App() {
+  // Launch Screen (Splash) State - fades out after 3 seconds
+  const [showLaunchScreen, setShowLaunchScreen] = useState(true);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
+  // Navigation & Auth State
+  const [activeTab, setActiveTab] = useState('meals');
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [aiEngineStatus, setAiEngineStatus] = useState('Firebase AI Logic Ready');
+
+  // Firestore Persisted Collections State
+  const [meals, setMeals] = useState([]);
+  const [weeklyPlan, setWeeklyPlan] = useState({});
+  const [groceryItems, setGroceryItems] = useState([]);
+  const [mealHistory, setMealHistory] = useState([]);
+  const [tasteProfile, setTasteProfile] = useState(null);
+
+  // UI & Modal States
+  const [toast, setToast] = useState(null);
+  const [selectedRecipeModal, setSelectedRecipeModal] = useState(null);
+  const [assignModalMeal, setAssignModalMeal] = useState(null);
+  const [rateModalData, setRateModalData] = useState(null);
+  const [manualHistoryModal, setManualHistoryModal] = useState(false);
+  const [showAddGroceryDrawer, setShowAddGroceryDrawer] = useState(false);
+
+  // Walmart Sparky AI Modal & State
+  const [sparkyModalOpen, setSparkyModalOpen] = useState(false);
+  const [sparkyFormat, setSparkyFormat] = useState('sparky-chat'); // 'sparky-chat' | 'bullet' | 'comma'
+  const [sparkyIncludeChecked, setSparkyIncludeChecked] = useState(false);
+  const [aiSparkyOptimizedText, setAiSparkyOptimizedText] = useState('');
+  const [isOptimizingSparky, setIsOptimizingSparky] = useState(false);
+  const [copiedSparky, setCopiedSparky] = useState(false);
+
+  // Meal Picker Search & AI Generator State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [aiCravingInput, setAiCravingInput] = useState('');
+  const [useTasteProfileToggle, setUseTasteProfileToggle] = useState(true);
+  const [isGeneratingMeals, setIsGeneratingMeals] = useState(false);
+  const [activeTagFilter, setActiveTagFilter] = useState('All');
+
+  // Grocery Custom Input & AI Optimization State
+  const [newGroceryName, setNewGroceryName] = useState('');
+  const [newGroceryAmount, setNewGroceryAmount] = useState('');
+  const [newGroceryCategory, setNewGroceryCategory] = useState('Produce & Veg');
+  const [isAiOrganizingGrocery, setIsAiOrganizingGrocery] = useState(false);
+
+  // History AI Analysis State
+  const [isAnalyzingTaste, setIsAnalyzingTaste] = useState(false);
+
+  // Helper to show non-intrusive toast messages
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 4000);
+  };
+
+  // Launch Screen 3-Second Fade Timer
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => {
+      setIsFadingOut(true);
+    }, 3000);
+
+    const removeTimer = setTimeout(() => {
+      setShowLaunchScreen(false);
+    }, 3700);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
+  }, []);
+
+  // ============================================================================
+  // 1. FIREBASE AUTHENTICATION (STRICT RULE 3 COMPLIANCE)
+  // ============================================================================
+  useEffect(() => {
+    let isMounted = true;
+
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          try {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } catch (tokenErr) {
+            // Fallback to anonymous auth if custom token is scoped to another project
+            await signInAnonymously(auth);
+          }
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.error('Authentication error:', err);
+      }
+    };
+
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (isMounted) {
+        setUser(currentUser);
+        setAuthReady(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  // ============================================================================
+  // 2. FIRESTORE REAL-TIME LISTENERS (STRICT RULE 1 & RULE 2 COMPLIANCE)
+  // ============================================================================
+  useEffect(() => {
+    if (!authReady || !user) return;
+
+    // Collection 1: Recipes / Meals Pool
+    const mealsRef = collection(db, 'artifacts', appId, 'public', 'data', 'meals');
+    const unsubMeals = onSnapshot(
+      mealsRef,
+      async (snapshot) => {
+        const loadedMeals = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (loadedMeals.length === 0) {
+          // Seed initial balanced 800-1000 kcal recipes on first load
+          for (const starter of INITIAL_STARTER_MEALS) {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'meals', starter.id), starter);
+          }
+        } else {
+          loadedMeals.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          setMeals(loadedMeals);
+        }
+      },
+      (err) => console.error('Meals listener error:', err)
+    );
+
+    // Collection 2: Weekly Calendar Plan
+    const calendarRef = collection(db, 'artifacts', appId, 'public', 'data', 'calendar');
+    const unsubCalendar = onSnapshot(
+      calendarRef,
+      (snapshot) => {
+        const planMap = {};
+        snapshot.docs.forEach((d) => {
+          planMap[d.id] = d.data();
+        });
+        setWeeklyPlan(planMap);
+      },
+      (err) => console.error('Calendar listener error:', err)
+    );
+
+    // Collection 3: Grocery List
+    const groceryRef = collection(db, 'artifacts', appId, 'public', 'data', 'grocery');
+    const unsubGrocery = onSnapshot(
+      groceryRef,
+      (snapshot) => {
+        const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        items.sort((a, b) => (a.checked === b.checked ? (a.name || '').localeCompare(b.name || '') : a.checked ? 1 : -1));
+        setGroceryItems(items);
+      },
+      (err) => console.error('Grocery listener error:', err)
+    );
+
+    // Collection 4: Meal History & Ratings
+    const historyRef = collection(db, 'artifacts', appId, 'public', 'data', 'history');
+    const unsubHistory = onSnapshot(
+      historyRef,
+      (snapshot) => {
+        const records = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        records.sort((a, b) => (b.eatenAt || 0) - (a.eatenAt || 0));
+        setMealHistory(records);
+      },
+      (err) => console.error('History listener error:', err)
+    );
+
+    // Collection 5: AI Family Taste Profile
+    const profileRef = collection(db, 'artifacts', appId, 'public', 'data', 'tasteProfile');
+    const unsubProfile = onSnapshot(
+      profileRef,
+      (snapshot) => {
+        const mainDoc = snapshot.docs.find((d) => d.id === 'family-profile');
+        if (mainDoc) {
+          setTasteProfile(mainDoc.data());
+        }
+      },
+      (err) => console.error('Profile listener error:', err)
+    );
+
+    return () => {
+      unsubMeals();
+      unsubCalendar();
+      unsubGrocery();
+      unsubHistory();
+      unsubProfile();
+    };
+  }, [authReady, user]);
+
+  // ============================================================================
+  // 3. CORE ACTIONS: MEALS, CALENDAR, GROCERY & HISTORY
+  // ============================================================================
+
+  // Assign a meal to a day of the week & optionally sync its ingredients
+  const assignMealToDay = async (meal, day, autoAddGroceries = true) => {
+    if (!user) return;
+    try {
+      const dayRef = doc(db, 'artifacts', appId, 'public', 'data', 'calendar', day);
+      await setDoc(dayRef, {
+        day,
+        meal,
+        assignedAt: Date.now()
+      });
+
+      if (autoAddGroceries && Array.isArray(meal.ingredients)) {
+        await addIngredientsToGroceryList(meal.ingredients, meal.name);
+      }
+
+      setAssignModalMeal(null);
+      showToast(`Planned "${meal.name}" for ${day}${autoAddGroceries ? ' & added groceries!' : '!'}`);
+    } catch (err) {
+      console.error('Error assigning meal:', err);
+      showToast('Could not save meal to calendar.', 'error');
+    }
+  };
+
+  // Remove a meal from a calendar day
+  const removeMealFromDay = async (day) => {
+    if (!user) return;
+    try {
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'calendar', day));
+      showToast(`Cleared ${day}'s dinner plan.`);
+    } catch (err) {
+      console.error('Error removing meal from day:', err);
+    }
+  };
+
+  // Add ingredients from a meal or full week into Firestore grocery list
+  const addIngredientsToGroceryList = async (ingredients, mealName) => {
+    if (!user) return;
+    for (const ing of ingredients) {
+      const normalizedKey = ing.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const existing = groceryItems.find(
+        (item) => item.id === `ing-${normalizedKey}` || item.name.trim().toLowerCase() === ing.name.trim().toLowerCase()
+      );
+
+      if (existing) {
+        const existingSources = Array.isArray(existing.fromMeals) ? existing.fromMeals : [];
+        const updatedSources = existingSources.includes(mealName)
+          ? existingSources
+          : [...existingSources, mealName];
+        const updatedAmount = existingSources.includes(mealName)
+          ? existing.amount
+          : `${existing.amount} + ${ing.amount}`;
+
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', existing.id), {
+          ...existing,
+          amount: updatedAmount,
+          fromMeals: updatedSources
+        });
+      } else {
+        const docId = `ing-${normalizedKey}-${Date.now().toString().slice(-4)}`;
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', docId), {
+          name: ing.name,
+          amount: ing.amount || '1 unit',
+          category: ing.category || 'Produce & Veg',
+          checked: false,
+          fromMeals: mealName ? [mealName] : [],
+          createdAt: Date.now()
+        });
+      }
+    }
+  };
+
+  // Sync all currently planned calendar meals into the Grocery List
+  const syncAllPlannedMealsToGrocery = async () => {
+    if (!user) return;
+    const plannedDays = Object.values(weeklyPlan).filter((entry) => entry && entry.meal);
+    if (plannedDays.length === 0) {
+      showToast('No meals planned on the calendar yet!', 'error');
+      return;
+    }
+
+    try {
+      for (const entry of plannedDays) {
+        if (entry.meal?.ingredients) {
+          await addIngredientsToGroceryList(entry.meal.ingredients, entry.meal.name);
+        }
+      }
+      showToast(`Synced ingredients from ${plannedDays.length} planned dinner(s) to Grocery List!`);
+      setActiveTab('grocery');
+    } catch (err) {
+      console.error('Error syncing groceries:', err);
+      showToast('Failed to sync groceries.', 'error');
+    }
+  };
+
+  // Toggle grocery item checked status
+  const toggleGroceryItem = async (item) => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', item.id), {
+        ...item,
+        checked: !item.checked
+      });
+    } catch (err) {
+      console.error('Error toggling grocery item:', err);
+    }
+  };
+
+  // Add a custom grocery item
+  const handleAddCustomGrocery = async (e) => {
+    e.preventDefault();
+    if (!user || !newGroceryName.trim()) return;
+    const id = `custom-${Date.now()}`;
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', id), {
+        name: newGroceryName.trim(),
+        amount: newGroceryAmount.trim() || '1 item',
+        category: newGroceryCategory,
+        checked: false,
+        fromMeals: ['Custom Family Addition'],
+        createdAt: Date.now()
+      });
+      setNewGroceryName('');
+      setNewGroceryAmount('');
+      showToast(`Added "${newGroceryName.trim()}" to grocery list.`);
+    } catch (err) {
+      console.error('Error adding grocery:', err);
+    }
+  };
+
+  // Delete single grocery item
+  const deleteGroceryItem = async (id) => {
+    if (!user) return;
+    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', id));
+  };
+
+  // Clear checked grocery items
+  const clearCheckedGroceries = async () => {
+    if (!user) return;
+    const checked = groceryItems.filter((i) => i.checked);
+    for (const item of checked) {
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', item.id));
+    }
+    showToast(`Cleared ${checked.length} checked item(s).`);
+  };
+
+  // Save a meal to History with a 0-5 Star Rating
+  const logMealToHistory = async ({ meal, rating, notes, dayCleared }) => {
+    if (!user) return;
+    const historyId = `hist-${Date.now()}`;
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', historyId), {
+        mealId: meal.id || historyId,
+        name: meal.name,
+        description: meal.description || '',
+        calories: Number(meal.calories) || 900,
+        macros: meal.macros || { protein: 50, carbs: 80, fat: 35, fiber: 10 },
+        veggieHighlight: meal.veggieHighlight || 'Balanced vegetables',
+        tags: meal.tags || [],
+        rating: Number(rating), // Supports 0 to 5 stars
+        notes: notes || '',
+        eatenAt: Date.now(),
+        dayOfWeek: dayCleared || ''
+      });
+
+      setRateModalData(null);
+      setManualHistoryModal(false);
+      showToast(`Logged "${meal.name}" (${rating}/5 stars) to Family History!`);
+    } catch (err) {
+      console.error('Error logging meal history:', err);
+      showToast('Failed to log meal to history.', 'error');
+    }
+  };
+
+  // Update rating (0-5 stars) or notes on an existing history record
+  const updateHistoryRating = async (record, newRating, newNotes = record.notes) => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', record.id), {
+        ...record,
+        rating: Number(newRating),
+        notes: newNotes
+      });
+      showToast(`Updated rating for "${record.name}" to ${newRating}/5 stars.`);
+    } catch (err) {
+      console.error('Error updating rating:', err);
+    }
+  };
+
+  // Delete a meal history item
+  const deleteHistoryItem = async (id) => {
+    if (!user) return;
+    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'history', id));
+    showToast('Removed entry from history.');
+  };
+
+  // Delete a recipe from the meals library
+  const deleteMealFromLibrary = async (id) => {
+    if (!user) return;
+    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'meals', id));
+    showToast('Removed recipe from library.');
+  };
+
+  // ============================================================================
+  // 4. GEMINI AI FEATURES: BALANCED MEAL SEARCH & HISTORY TASTE EVALUATOR
+  // ============================================================================
+
+  // AI Feature A: Generate Balanced 800-1000 Calorie Family Dinners
+  const handleGenerateBalancedMeals = async (overrideQuery = null) => {
+    if (!user || isGeneratingMeals) return;
+    setIsGeneratingMeals(true);
+
+    try {
+      const highRated = mealHistory
+        .filter((h) => h.rating >= 4)
+        .map((h) => `${h.name} (${h.rating}/5 stars${h.notes ? `: ${h.notes}` : ''})`);
+      const lowRated = mealHistory
+        .filter((h) => h.rating <= 2)
+        .map((h) => `${h.name} (${h.rating}/5 stars${h.notes ? `: ${h.notes}` : ''})`);
+
+      let tasteContext = '';
+      if (useTasteProfileToggle) {
+        if (tasteProfile) {
+          tasteContext = `
+FAMILY AI TASTE PROFILE:
+- Summary: ${tasteProfile.summary}
+- Preferred Proteins: ${(tasteProfile.preferredProteins || []).join(', ')}
+- Preferred Veggies & Sides: ${(tasteProfile.preferredVeggies || []).join(', ')}
+- Favorite Cuisines/Flavors: ${(tasteProfile.favoriteFlavors || []).join(', ')}
+- Dislikes / Avoid: ${(tasteProfile.avoidList || []).join(', ')}
+- Next Meal Strategy: ${tasteProfile.recommendationStrategy}
+`;
+        }
+        if (highRated.length > 0 || lowRated.length > 0) {
+          tasteContext += `
+PAST FAMILY MEAL RATINGS:
+- Loved Meals (4-5 stars): ${highRated.join('; ') || 'None yet'}
+- Disliked Meals (0-2 stars, AVOID similar styles): ${lowRated.join('; ') || 'None yet'}
+`;
+        }
+      }
+
+      const customRequest = overrideQuery !== null ? overrideQuery : aiCravingInput.trim();
+      const existingNames = meals.slice(0, 12).map((m) => m.name).join(', ');
+
+      const systemPrompt = `You are an expert family culinary nutritionist and chef.
+Generate 3 distinct, mouthwatering, wholesome family dinner recipes.
+CRITICAL NUTRITIONAL REQUIREMENTS FOR EVERY RECIPE:
+1. Calories per serving MUST strictly be between 800 and 1000 calories (e.g., 830, 890, 940 kcal).
+2. Macros MUST be well-balanced for a hearty, nutritious dinner:
+   - High quality protein: 45g to 65g per serving
+   - Complex carbohydrates: 65g to 95g per serving
+   - Healthy fats: 28g to 44g per serving
+   - Fiber: at least 8g to 15g per serving
+3. Abundant vegetables: Every meal must include at least 2 generous servings of vegetables integrated into the dish or sides.
+4. Ingredient categories must be one of: "Produce & Veg", "Meat & Seafood", "Dairy & Eggs", "Pantry & Grains", "Spices & Condiments".`;
+
+      const userPrompt = `Create 3 new balanced family dinner recipes (800-1000 kcal per serving, 4 servings each).
+${customRequest ? `USER SEARCH / CRAVING REQUEST: "${customRequest}"` : 'Create a diverse, crowd-pleasing variety of balanced dinners.'}
+${tasteContext}
+Do not duplicate these existing meal names: ${existingNames}.
+For each meal, include a "matchReason" explaining how it hits the 800-1000 kcal macro balance and why it fits the family's taste profile or search request.`;
+
+      const schema = {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            name: { type: "STRING" },
+            description: { type: "STRING" },
+            prepTime: { type: "STRING" },
+            servings: { type: "INTEGER" },
+            calories: { type: "INTEGER" },
+            macros: {
+              type: "OBJECT",
+              properties: {
+                protein: { type: "INTEGER" },
+                carbs: { type: "INTEGER" },
+                fat: { type: "INTEGER" },
+                fiber: { type: "INTEGER" }
+              },
+              propertyOrdering: ["protein", "carbs", "fat", "fiber"]
+            },
+            veggieHighlight: { type: "STRING" },
+            tags: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            },
+            matchReason: { type: "STRING" },
+            ingredients: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  name: { type: "STRING" },
+                  amount: { type: "STRING" },
+                  category: { type: "STRING" }
+                },
+                propertyOrdering: ["name", "amount", "category"]
+              }
+            },
+            instructions: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            }
+          },
+          propertyOrdering: [
+            "name",
+            "description",
+            "prepTime",
+            "servings",
+            "calories",
+            "macros",
+            "veggieHighlight",
+            "tags",
+            "matchReason",
+            "ingredients",
+            "instructions"
+          ]
+        }
+      };
+
+      const generatedRecipes = await callFirebaseAILogic(
+        systemPrompt,
+        userPrompt,
+        schema,
+        setAiEngineStatus
+      );
+
+      if (Array.isArray(generatedRecipes) && generatedRecipes.length > 0) {
+        let baseTime = Date.now();
+        for (const recipe of generatedRecipes) {
+          const clampedCals = Math.min(1000, Math.max(800, Number(recipe.calories) || 890));
+          const id = `ai-meal-${baseTime++}`;
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'meals', id), {
+            ...recipe,
+            id,
+            calories: clampedCals,
+            isAiGenerated: true,
+            createdAt: baseTime
+          });
+        }
+        setAiCravingInput('');
+        showToast(`Firebase AI created ${generatedRecipes.length} balanced (800-1000 kcal) dinners!`);
+        setActiveTab('meals');
+      }
+    } catch (err) {
+      console.error('AI Meal Generation Error:', err);
+      showToast('AI could not generate meals right now. Please try again.', 'error');
+    } finally {
+      setIsGeneratingMeals(false);
+    }
+  };
+
+  // AI Feature B: Evaluate Family Meal History (0-5 Stars) & Build Taste Profile
+  const handleEvaluateTasteHistory = async (andGenerateMeals = false) => {
+    if (!user || isAnalyzingTaste) return;
+    if (mealHistory.length === 0) {
+      showToast('Log and rate at least 1 meal in History first so AI can evaluate your taste!', 'error');
+      return;
+    }
+
+    setIsAnalyzingTaste(true);
+    try {
+      const historySummary = mealHistory
+        .map(
+          (h) =>
+            `- "${h.name}" | Rating: ${h.rating}/5 stars | Calories: ${h.calories} kcal | Macros: ${h.macros?.protein}g P, ${h.macros?.carbs}g C, ${h.macros?.fat}g F | Veggies: ${h.veggieHighlight || 'N/A'} | Family Notes: "${h.notes || 'None'}"`
+        )
+        .join('\n');
+
+      const systemPrompt = `You are a culinary data scientist and family nutrition advisor running on Firebase AI Logic.
+Analyze the family's historical dinner ratings (scaled 0 to 5 stars, where 0-1 is strongly disliked, 2-3 is neutral/okay, and 4-5 is loved).
+Identify clear patterns in proteins, cooking styles, vegetable preparations, cuisines, and macro ratios.
+Provide an insightful, actionable Family Taste Profile that will directly power future 800-1000 calorie dinner suggestions.`;
+
+      const userPrompt = `Here is the family's dinner history and 0-5 star ratings:
+${historySummary}
+
+Evaluate what types of meals this family loves, what they dislike, and formulate a concrete strategy and 3 specific meal concepts (800-1000 kcal) to suggest next.`;
+
+      const schema = {
+        type: "OBJECT",
+        properties: {
+          headline: { type: "STRING" },
+          summary: { type: "STRING" },
+          preferredProteins: { type: "ARRAY", items: { type: "STRING" } },
+          preferredVeggies: { type: "ARRAY", items: { type: "STRING" } },
+          favoriteFlavors: { type: "ARRAY", items: { type: "STRING" } },
+          avoidList: { type: "ARRAY", items: { type: "STRING" } },
+          recommendationStrategy: { type: "STRING" },
+          suggestedMealPrompts: { type: "ARRAY", items: { type: "STRING" } }
+        },
+        propertyOrdering: [
+          "headline",
+          "summary",
+          "preferredProteins",
+          "preferredVeggies",
+          "favoriteFlavors",
+          "avoidList",
+          "recommendationStrategy",
+          "suggestedMealPrompts"
+        ]
+      };
+
+      const analysis = await callFirebaseAILogic(
+        systemPrompt,
+        userPrompt,
+        schema,
+        setAiEngineStatus
+      );
+
+      const profileData = {
+        ...analysis,
+        analyzedCount: mealHistory.length,
+        updatedAt: Date.now()
+      };
+
+      await setDoc(
+        doc(db, 'artifacts', appId, 'public', 'data', 'tasteProfile', 'family-profile'),
+        profileData
+      );
+
+      setTasteProfile(profileData);
+      showToast('Firebase AI Taste Profile updated from your ratings!');
+
+      if (andGenerateMeals) {
+        const promptIdea =
+          (analysis.suggestedMealPrompts || []).join('; ') ||
+          analysis.recommendationStrategy;
+        await handleGenerateBalancedMeals(
+          `Strictly tailored to our AI Taste Profile: ${promptIdea}`
+        );
+      }
+    } catch (err) {
+      console.error('Error evaluating taste history:', err);
+      showToast('Could not complete AI taste analysis. Please try again.', 'error');
+    } finally {
+      setIsAnalyzingTaste(false);
+    }
+  };
+
+  // AI Feature C: Firebase AI Logic Smart Grocery List Consolidator & Optimizer
+  const handleAiConsolidateGroceryList = async () => {
+    if (!user || isAiOrganizingGrocery) return;
+
+    const plannedMealsList = Object.values(weeklyPlan)
+      .map((entry) => entry?.meal)
+      .filter(Boolean);
+
+    if (groceryItems.length === 0 && plannedMealsList.length === 0) {
+      showToast('Plan meals or add items first so Firebase AI can optimize your grocery list!', 'error');
+      return;
+    }
+
+    setIsAiOrganizingGrocery(true);
+    try {
+      const currentUnchecked = groceryItems.filter((i) => !i.checked);
+      const currentChecked = groceryItems.filter((i) => i.checked);
+
+      const rawItemsText = currentUnchecked
+        .map((i) => `- ${i.name} (Qty: ${i.amount}, Category: ${i.category}, Meals: ${(i.fromMeals || []).join(', ')})`)
+        .join('\n');
+
+      const plannedMealsText = plannedMealsList
+        .map(
+          (m) =>
+            `Meal: ${m.name} -> Ingredients: ${(m.ingredients || [])
+              .map((ing) => `${ing.amount} ${ing.name}`)
+              .join(', ')}`
+        )
+        .join('\n');
+
+      const systemPrompt = `You are a smart grocery list optimizer powered by Firebase AI Logic.
+Take the user's current unchecked grocery items and planned weekly dinners, merge duplicate ingredients (e.g., combining multiple olive oil or garlic entries into a single practical store-friendly quantity like "1 bottle (or 6 tbsp)" or "1 bulb (8 cloves)"), standardize names for fast online ordering (such as Walmart Sparky AI), and categorize each item into one of:
+"Produce & Veg", "Meat & Seafood", "Dairy & Eggs", "Pantry & Grains", "Spices & Condiments".`;
+
+      const userPrompt = `Consolidate and optimize this weekly family grocery list for easy store ordering:
+CURRENT UNCHECKED GROCERY LIST:
+${rawItemsText || 'None yet — build from planned meals below'}
+
+PLANNED WEEKLY DINNERS:
+${plannedMealsText || 'Use current grocery list items'}
+
+Return a clean, deduplicated array of grocery items with practical store quantities.`;
+
+      const schema = {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            name: { type: "STRING" },
+            amount: { type: "STRING" },
+            category: { type: "STRING" },
+            fromMeals: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            }
+          },
+          propertyOrdering: ["name", "amount", "category", "fromMeals"]
+        }
+      };
+
+      const consolidated = await callFirebaseAILogic(
+        systemPrompt,
+        userPrompt,
+        schema,
+        setAiEngineStatus
+      );
+
+      if (Array.isArray(consolidated) && consolidated.length > 0) {
+        // Remove old unchecked items and replace with AI consolidated items, keeping checked items intact
+        for (const oldItem of currentUnchecked) {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', oldItem.id));
+        }
+
+        let stamp = Date.now();
+        for (const item of consolidated) {
+          const newId = `ai-groc-${stamp++}`;
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'grocery', newId), {
+            name: item.name,
+            amount: item.amount,
+            category: item.category || 'Produce & Veg',
+            fromMeals: item.fromMeals || [],
+            checked: false,
+            createdAt: stamp
+          });
+        }
+
+        showToast(`Firebase AI consolidated your list into ${consolidated.length} store-ready items!`);
+      }
+    } catch (err) {
+      console.error('AI Grocery Consolidation Error:', err);
+      showToast('Could not consolidate grocery list with AI.', 'error');
+    } finally {
+      setIsAiOrganizingGrocery(false);
+    }
+  };
+
+  // AI Feature D: Generate Walmart Sparky AI Optimized Shopping Prompt via Firebase AI Logic
+  const handleGenerateWalmartSparkyAI = async () => {
+    const itemsToExport = groceryItems.filter((i) => (sparkyIncludeChecked ? true : !i.checked));
+    if (itemsToExport.length === 0) {
+      showToast('No grocery items to format for Sparky AI!', 'error');
+      return;
+    }
+
+    setIsOptimizingSparky(true);
+    try {
+      const rawList = itemsToExport.map((i) => `${i.amount} ${i.name}`).join('\n');
+      const systemPrompt = `You are a Walmart online grocery assistant formatter.
+Convert recipe ingredient quantities into clear, natural Walmart shopping list text that works seamlessly when pasted into "Sparky AI" on Walmart's website or app.
+Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") into actual purchasable store units (like "1 bottle Extra Virgin Olive Oil" or "1 head Fresh Garlic") while keeping fresh meat and produce weights clear.`;
+
+      const userPrompt = `Format these family grocery items into a ready-to-paste prompt for Walmart's Sparky AI shopping assistant:
+${rawList}`;
+
+      const schema = {
+        type: "OBJECT",
+        properties: {
+          sparkyPrompt: { type: "STRING" }
+        },
+        propertyOrdering: ["sparkyPrompt"]
+      };
+
+      const res = await callFirebaseAILogic(
+        systemPrompt,
+        userPrompt,
+        schema,
+        setAiEngineStatus
+      );
+      if (res?.sparkyPrompt) {
+        setAiSparkyOptimizedText(res.sparkyPrompt);
+        showToast('Firebase AI formatted your list for Walmart Sparky AI!');
+      }
+    } catch (err) {
+      console.error('Sparky AI format error:', err);
+      showToast('Could not run AI package conversion, using standard Sparky text.', 'error');
+    } finally {
+      setIsOptimizingSparky(false);
+    }
+  };
+
+  // Build deterministic Walmart Sparky AI text whenever modal is opened
+  const sparkyExportText = useMemo(() => {
+    if (aiSparkyOptimizedText) return aiSparkyOptimizedText;
+
+    const list = groceryItems.filter((i) => (sparkyIncludeChecked ? true : !i.checked));
+    if (list.length === 0) {
+      return 'Your grocery list is currently empty. Add or sync meals from your calendar first!';
+    }
+
+    if (sparkyFormat === 'sparky-chat') {
+      const lines = list.map((i) => `• ${i.name} (${i.amount})`).join('\n');
+      return `Hi Sparky! Please help me find and add these grocery items to my Walmart cart for our family dinners this week:\n\n${lines}\n\nPrefer fresh produce and best-value family sizes where possible.`;
+    }
+
+    if (sparkyFormat === 'Comma') {
+      return `Add to Walmart cart: ${list.map((i) => `${i.amount} ${i.name}`).join(', ')}`;
+    }
+
+    // Default clean bulleted list
+    return list.map((i) => `- ${i.amount} ${i.name}`).join('\n');
+  }, [groceryItems, sparkyFormat, sparkyIncludeChecked, aiSparkyOptimizedText]);
+
+  // Copy text helper using document.execCommand('copy') for iframe compatibility
+  const copyTextToClipboard = (textToCopy) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = textToCopy;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopiedSparky(true);
+      showToast('Copied Walmart Sparky AI list to clipboard!');
+      setTimeout(() => setCopiedSparky(false), 2500);
+    } catch (err) {
+      showToast('Failed to copy text.', 'error');
+    }
+    document.body.removeChild(textArea);
+  };
+
+  // ============================================================================
+  // COMPUTED METRICS & FILTERING
+  // ============================================================================
+  const filteredMeals = useMemo(() => {
+    return meals.filter((m) => {
+      const matchesSearch =
+        !searchQuery.trim() ||
+        m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.veggieHighlight?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      if (activeTagFilter === 'All') return true;
+      if (activeTagFilter === 'AI Suggested') return Boolean(m.isAiGenerated);
+      if (activeTagFilter === 'High Protein (55g+)') return (m.macros?.protein || 0) >= 55;
+      if (activeTagFilter === 'High Fiber (10g+)') return (m.macros?.fiber || 0) >= 10;
+      return true;
+    });
+  }, [meals, searchQuery, activeTagFilter]);
+
+  const calendarStats = useMemo(() => {
+    const plannedEntries = DAYS_OF_WEEK.map((d) => weeklyPlan[d]?.meal).filter(Boolean);
+    if (plannedEntries.length === 0) {
+      return { count: 0, avgCalories: 0, avgProtein: 0, avgCarbs: 0, avgFat: 0 };
+    }
+    const totalCal = plannedEntries.reduce((sum, m) => sum + (Number(m.calories) || 0), 0);
+    const totalProt = plannedEntries.reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0);
+    const totalCarbs = plannedEntries.reduce((sum, m) => sum + (Number(m.macros?.carbs) || 0), 0);
+    const totalFat = plannedEntries.reduce((sum, m) => sum + (Number(m.macros?.fat) || 0), 0);
+
+    return {
+      count: plannedEntries.length,
+      avgCalories: Math.round(totalCal / plannedEntries.length),
+      avgProtein: Math.round(totalProt / plannedEntries.length),
+      avgCarbs: Math.round(totalCarbs / plannedEntries.length),
+      avgFat: Math.round(totalFat / plannedEntries.length)
+    };
+  }, [weeklyPlan]);
+
+  const groupedGroceries = useMemo(() => {
+    const groups = {};
+    groceryItems.forEach((item) => {
+      const cat = item.category || 'Other';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(item);
+    });
+    return groups;
+  }, [groceryItems]);
+
+  // Helper to render interactive 0-5 star rating control
+  const renderStarRatingInput = (currentRating, onSelect) => {
+    return (
+      <div className="flex items-center gap-1 flex-wrap">
+        <button
+          type="button"
+          onClick={() => onSelect(0)}
+          title="0 Stars - Disliked / Do not suggest again"
+          className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border ${
+            Number(currentRating) === 0
+              ? 'bg-rose-100 text-rose-700 border-rose-300 shadow-sm'
+              : 'bg-stone-100 text-stone-500 border-stone-200 hover:bg-stone-200'
+          }`}
+        >
+          <ThumbsDown className="w-3.5 h-3.5" />
+          0★
+        </button>
+        {[1, 2, 3, 4, 5].map((star) => {
+          const active = Number(currentRating) >= star;
+          return (
+            <button
+              key={star}
+              type="button"
+              onClick={() => onSelect(star)}
+              className="p-1.5 rounded-lg active:scale-125 transition-transform focus:outline-none"
+              title={`Rate ${star} star${star > 1 ? 's' : ''}`}
+            >
+              <Star
+                className={`w-6 h-6 sm:w-5 sm:h-5 transition-colors ${
+                  active
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'text-stone-300 hover:text-amber-300'
+                }`}
+              />
+            </button>
+          );
+        })}
+        <span className="ml-1 text-xs font-extrabold text-stone-700 bg-stone-100 px-2.5 py-1 rounded-full">
+          {currentRating}/5
+        </span>
+      </div>
+    );
+  };
+
+  const uncheckedGroceryCount = groceryItems.filter((i) => !i.checked).length;
+
+  // ============================================================================
+  // RENDER UI (MOBILE-FIRST STREAMLINED LAYOUT)
+  // ============================================================================
+  return (
+    <div className="min-h-screen bg-stone-100/70 text-stone-900 flex flex-col font-sans pb-24 md:pb-8">
+      {/* =====================================================================
+          LAUNCH SCREEN OVERLAY (FADES AFTER 3 SECONDS)
+      ===================================================================== */}
+      {showLaunchScreen && (
+        <div
+          onClick={() => {
+            setIsFadingOut(true);
+            setTimeout(() => setShowLaunchScreen(false), 500);
+          }}
+          className={`fixed inset-0 z-[100] flex flex-col items-center justify-center px-6 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-950 text-white transition-opacity duration-700 ease-out select-none ${
+            isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          {/* Ambient Decorative Background Glow */}
+          <div className="absolute w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+          <div className="absolute w-60 h-60 rounded-full bg-amber-400/10 blur-2xl translate-y-12 pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col items-center text-center max-w-sm">
+            {/* Subtle Top Tag */}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest bg-white/10 text-amber-300 border border-white/15 mb-4">
+              <Sparkles className="w-3 h-3" />
+              AI Family Meal Planner
+            </span>
+
+            {/* App Name First */}
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow-sm">
+              The Family Table
+            </h1>
+            <p className="text-xs sm:text-sm font-medium text-emerald-200/90 mt-2">
+              Wholesome 800–1000 kcal dinners, planned together
+            </p>
+
+            {/* Appropriate Icon Underneath the Name */}
+            <div className="mt-8 relative flex items-center justify-center">
+              <div className="absolute inset-0 rounded-3xl bg-amber-400/25 blur-xl animate-pulse" />
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-emerald-600 p-0.5 shadow-2xl">
+                <div className="w-full h-full bg-emerald-950/90 rounded-[22px] flex flex-col items-center justify-center gap-1.5">
+                  <ChefHat className="w-7 h-7 text-amber-300" />
+                  <div className="flex items-center gap-2">
+                    <Utensils className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Subtle Loading Progress Bar */}
+            <div className="mt-10 w-36 h-1 bg-white/15 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-400 rounded-full animate-pulse w-full" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top Notification Toast (Positioned above mobile bottom nav) */}
+      {toast && (
+        <div className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 z-50 md:max-w-md pointer-events-none">
+          <div
+            className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border ${
+              toast.type === 'error'
+                ? 'bg-rose-600 text-white border-rose-500'
+                : 'bg-stone-900 text-white border-stone-700'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 shrink-0 text-amber-300" />
+            <span className="text-xs sm:text-sm font-semibold flex-1">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="p-1 hover:bg-white/10 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sleek Sticky Header */}
+      <header className="bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-3.5 sm:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
+            {/* Compact Brand Identity */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-sm shrink-0">
+                <ChefHat className="w-5 h-5" />
+              </div>
+              <div className="truncate">
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-stone-900 truncate">
+                    The Family Table
+                  </h1>
+                  <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    800–1000 kcal
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-500 truncate flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-emerald-600 inline shrink-0" />
+                  <span>{aiEngineStatus}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Mobile Action Pill (Walmart Sparky Quick Access on Grocery Tab or Quick Plan Badge) */}
+            <div className="flex items-center gap-2 md:hidden">
+              <button
+                onClick={() => {
+                  setAiSparkyOptimizedText('');
+                  setSparkyModalOpen(true);
+                }}
+                className="px-2.5 py-1.5 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xs font-bold flex items-center gap-1 shadow-sm"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                <span>Sparky AI</span>
+              </button>
+            </div>
+
+            {/* Desktop Navigation Pills (Hidden on Phone, replaced by Bottom Nav Bar) */}
+            <nav className="hidden md:flex items-center gap-1 bg-stone-100 p-1 rounded-2xl">
+              <button
+                onClick={() => setActiveTab('meals')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'meals'
+                    ? 'bg-white text-emerald-800 shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <Utensils className="w-4 h-4" />
+                <span>Meals</span>
+                <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
+                  {meals.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'calendar'
+                    ? 'bg-white text-emerald-800 shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Calendar</span>
+                <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
+                  {calendarStats.count}/7
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('grocery')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'grocery'
+                    ? 'bg-white text-emerald-800 shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span>Grocery</span>
+                <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-stone-200 text-stone-800">
+                  {uncheckedGroceryCount}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'history'
+                    ? 'bg-white text-emerald-800 shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <History className="w-4 h-4" />
+                <span>History & AI</span>
+                <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-800">
+                  {mealHistory.length}
+                </span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3.5 sm:px-6 py-4 sm:py-6">
+        {/* ===================================================================
+            TAB 1: DINNER MEAL PICKER (STREAMLINED PHONE UI + FIREBASE AI)
+        =================================================================== */}
+        {activeTab === 'meals' && (
+          <div className="space-y-4">
+            {/* Compact Mobile-First AI Generator Card */}
+            <div className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-md space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-200">
+                  <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                  <span>Firebase AI Meal Creator (800–1000 kcal)</span>
+                </div>
+
+                <label className="inline-flex items-center gap-1.5 text-[11px] bg-white/10 px-2.5 py-1 rounded-full text-emerald-100 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useTasteProfileToggle}
+                    onChange={(e) => setUseTasteProfileToggle(e.target.checked)}
+                    className="rounded text-amber-400 focus:ring-0 w-3.5 h-3.5"
+                  />
+                  <span>Use ★ Ratings</span>
+                </label>
+              </div>
+
+              {/* Search & Generate Input Row */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-emerald-300 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={aiCravingInput}
+                    onChange={(e) => setAiCravingInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleGenerateBalancedMeals();
+                    }}
+                    placeholder="Craving? e.g. Honey garlic salmon, sheet-pan steak..."
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-emerald-200/70 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                </div>
+                <button
+                  onClick={() => handleGenerateBalancedMeals()}
+                  disabled={isGeneratingMeals}
+                  className="py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] disabled:opacity-60 text-stone-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition-all shrink-0"
+                >
+                  {isGeneratingMeals ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Generating 3 Dinners...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>AI Generate 3 Meals</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* One-Tap Phone Prompt Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+                {[
+                  { label: '⚡ 25-Min Skillet', prompt: 'Fast 25-minute one-pan skillet dinners with high protein and green veggies' },
+                  { label: '🥩 Steak & Potatoes', prompt: 'Lean steak and roasted potato dinners with charred vegetables' },
+                  { label: '🐟 Crispy Fish & Greens', prompt: 'Baked or pan-seared fish with hearty grains and roasted greens' },
+                  { label: '🌮 Kid-Friendly Bowls', prompt: 'Family-friendly taco or rice bowls with high protein and colorful veggies' }
+                ].map((chip) => (
+                  <button
+                    key={chip.label}
+                    disabled={isGeneratingMeals}
+                    onClick={() => handleGenerateBalancedMeals(chip.prompt)}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-[11px] font-semibold text-emerald-100 whitespace-nowrap transition-colors shrink-0"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Compact Taste Profile Banner if active */}
+              {tasteProfile && (
+                <div className="pt-2 border-t border-white/15 flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <BrainCircuit className="w-4 h-4 text-amber-300 shrink-0" />
+                    <span className="truncate text-emerald-100">
+                      <strong className="text-white">Taste Match:</strong> {tasteProfile.headline}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() =>
+                      handleGenerateBalancedMeals(
+                        `Tailor strictly to our family taste profile: ${tasteProfile.recommendationStrategy}`
+                      )
+                    }
+                    disabled={isGeneratingMeals}
+                    className="px-2.5 py-1 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-bold text-[11px] whitespace-nowrap shrink-0"
+                  >
+                    + Match Profile
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Compact Filter Pills & Local Search */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                {['All', 'AI Suggested', 'High Protein (55g+)', 'High Fiber (10g+)'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTagFilter(tab)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                      activeTagFilter === tab
+                        ? 'bg-stone-900 text-white shadow-sm'
+                        : 'bg-white text-stone-600 border border-stone-200'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-60">
+                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filter saved recipes..."
+                  className="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
+            </div>
+
+            {/* Streamlined Phone-Friendly Meals Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5">
+              {filteredMeals.map((meal) => {
+                const plannedOnDays = DAYS_OF_WEEK.filter(
+                  (d) => weeklyPlan[d]?.meal?.id === meal.id || weeklyPlan[d]?.meal?.name === meal.name
+                );
+
+                const historyRatings = mealHistory.filter(
+                  (h) => h.name?.toLowerCase() === meal.name?.toLowerCase()
+                );
+                const avgHistoryRating =
+                  historyRatings.length > 0
+                    ? (
+                        historyRatings.reduce((acc, cur) => acc + Number(cur.rating || 0), 0) /
+                        historyRatings.length
+                      ).toFixed(1)
+                    : null;
+
+                return (
+                  <div
+                    key={meal.id}
+                    className="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm flex flex-col justify-between overflow-hidden"
+                  >
+                    <div className="p-4 sm:p-5 space-y-3">
+                      {/* Top Meta Pills */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
+                            <Flame className="w-3 h-3 text-amber-600 fill-amber-500" />
+                            {meal.calories} kcal
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-600">
+                            <Clock className="w-3 h-3" />
+                            {meal.prepTime || '30m'}
+                          </span>
+                          {meal.isAiGenerated && (
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              AI
+                            </span>
+                          )}
+                          {avgHistoryRating !== null && (
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              {avgHistoryRating}
+                            </span>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => deleteMealFromLibrary(meal.id)}
+                          title="Delete recipe"
+                          className="text-stone-300 hover:text-rose-600 p-1 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Title & Short Description */}
+                      <div
+                        onClick={() => setSelectedRecipeModal(meal)}
+                        className="cursor-pointer group"
+                      >
+                        <h3 className="text-base sm:text-lg font-extrabold text-stone-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                          {meal.name}
+                        </h3>
+                        <p className="text-xs text-stone-500 line-clamp-2 mt-1 leading-relaxed">
+                          {meal.description}
+                        </p>
+                      </div>
+
+                      {/* Veggie Highlight Pill */}
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50/80 px-3 py-1.5 rounded-xl border border-emerald-200/60">
+                        <Carrot className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span className="truncate">{meal.veggieHighlight || '2+ cups vegetables'}</span>
+                      </div>
+
+                      {/* Compact 4-Column Macro Strip */}
+                      <div className="grid grid-cols-4 gap-1.5 bg-stone-50 p-2.5 rounded-xl border border-stone-200/60 text-center">
+                        <div>
+                          <span className="text-[10px] font-semibold text-stone-400 uppercase block">
+                            Protein
+                          </span>
+                          <span className="text-xs sm:text-sm font-extrabold text-rose-700">
+                            {meal.macros?.protein || 50}g
+                          </span>
+                        </div>
+                        <div className="border-l border-stone-200">
+                          <span className="text-[10px] font-semibold text-stone-400 uppercase block">
+                            Carbs
+                          </span>
+                          <span className="text-xs sm:text-sm font-extrabold text-amber-700">
+                            {meal.macros?.carbs || 75}g
+                          </span>
+                        </div>
+                        <div className="border-l border-stone-200">
+                          <span className="text-[10px] font-semibold text-stone-400 uppercase block">
+                            Fat
+                          </span>
+                          <span className="text-xs sm:text-sm font-extrabold text-sky-700">
+                            {meal.macros?.fat || 35}g
+                          </span>
+                        </div>
+                        <div className="border-l border-stone-200">
+                          <span className="text-[10px] font-semibold text-stone-400 uppercase block">
+                            Fiber
+                          </span>
+                          <span className="text-xs sm:text-sm font-extrabold text-emerald-700">
+                            {meal.macros?.fiber || 10}g
+                          </span>
+                        </div>
+                      </div>
+
+                      {plannedOnDays.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[11px] font-bold text-emerald-700">
+                            On Calendar:
+                          </span>
+                          {plannedOnDays.map((d) => (
+                            <span
+                              key={d}
+                              className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-bold"
+                            >
+                              {d.slice(0, 3)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Touch-Optimized Action Bar */}
+                    <div className="px-4 py-2.5 bg-stone-50 border-t border-stone-200/80 grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => setSelectedRecipeModal(meal)}
+                        className="py-2 px-2 rounded-xl border border-stone-200 bg-white active:bg-stone-100 text-stone-700 text-xs font-bold flex items-center justify-center gap-1"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Recipe</span>
+                      </button>
+
+                      <button
+                        onClick={() => setRateModalData({ meal, rating: 5, notes: '' })}
+                        className="py-2 px-2 rounded-xl border border-amber-200 bg-amber-50 active:bg-amber-100 text-amber-900 text-xs font-bold flex items-center justify-center gap-1"
+                      >
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                        <span>Rate ★</span>
+                      </button>
+
+                      <button
+                        onClick={() => setAssignModalMeal(meal)}
+                        className="py-2 px-2 rounded-xl bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-1 shadow-sm"
+                      >
+                        <CalendarPlus className="w-3.5 h-3.5" />
+                        <span>Plan Day</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================
+            TAB 2: WEEKLY CALENDAR (STREAMLINED PHONE SCHEDULE)
+        =================================================================== */}
+        {activeTab === 'calendar' && (
+          <div className="space-y-4">
+            {/* Compact Weekly Summary Bar */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center justify-between sm:block">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-stone-900">
+                    Weekly Dinner Plan ({calendarStats.count}/7)
+                  </h2>
+                  <p className="text-xs text-stone-500">
+                    Avg: <strong>{calendarStats.avgCalories || '—'} kcal</strong> •{' '}
+                    <strong>{calendarStats.avgProtein || '—'}g Protein</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={syncAllPlannedMealsToGrocery}
+                  className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Sync Week to Groceries</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Streamlined Day List for Phone & Grid for Desktop */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {DAYS_OF_WEEK.map((day) => {
+                const plannedMeal = weeklyPlan[day]?.meal;
+
+                return (
+                  <div
+                    key={day}
+                    className={`rounded-2xl border transition-all flex flex-col justify-between overflow-hidden ${
+                      plannedMeal
+                        ? 'bg-white border-stone-200 shadow-sm'
+                        : 'bg-white/60 border-dashed border-stone-300'
+                    }`}
+                  >
+                    <div>
+                      <div className="px-4 py-2.5 border-b border-stone-100 flex items-center justify-between bg-stone-50/70">
+                        <span className="font-extrabold text-sm text-stone-900">{day}</span>
+                        {plannedMeal ? (
+                          <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-900">
+                            {plannedMeal.calories} kcal • {plannedMeal.macros?.protein}g P
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-stone-400 font-medium">Open Night</span>
+                        )}
+                      </div>
+
+                      {plannedMeal ? (
+                        <div className="p-4 space-y-2">
+                          <h3
+                            onClick={() => setSelectedRecipeModal(plannedMeal)}
+                            className="font-bold text-sm sm:text-base text-stone-900 leading-snug cursor-pointer hover:text-emerald-700"
+                          >
+                            {plannedMeal.name}
+                          </h3>
+                          <div className="text-xs text-emerald-700 font-medium flex items-center gap-1">
+                            <Carrot className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{plannedMeal.veggieHighlight}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3.5">
+                          <select
+                            onChange={(e) => {
+                              const found = meals.find((m) => m.id === e.target.value);
+                              if (found) assignMealToDay(found, day, true);
+                            }}
+                            defaultValue=""
+                            className="w-full text-xs px-3 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-stone-700 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          >
+                            <option value="" disabled>
+                              + Choose dinner for {day}...
+                            </option>
+                            {meals.map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name} ({m.calories} kcal)
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    {plannedMeal && (
+                      <div className="px-3.5 py-2.5 bg-stone-50 border-t border-stone-100 flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => setSelectedRecipeModal(plannedMeal)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-stone-600 hover:bg-stone-200/60"
+                        >
+                          Recipe
+                        </button>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() =>
+                              setRateModalData({
+                                meal: plannedMeal,
+                                rating: 5,
+                                notes: '',
+                                dayCleared: day
+                              })
+                            }
+                            className="px-3 py-1.5 rounded-xl bg-amber-100 active:bg-amber-200 text-amber-900 text-xs font-bold flex items-center gap-1"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Eaten & Rate</span>
+                          </button>
+
+                          <button
+                            onClick={() => removeMealFromDay(day)}
+                            className="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================
+            TAB 3: GROCERY LIST + FIREBASE AI CONSOLIDATOR + WALMART SPARKY AI
+        =================================================================== */}
+        {activeTab === 'grocery' && (
+          <div className="space-y-4">
+            {/* Streamlined Top Grocery Control Card */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-sm space-y-3.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-stone-900">
+                    Grocery List ({uncheckedGroceryCount} to order)
+                  </h2>
+                  <p className="text-xs text-stone-500">
+                    Tap items to check them off as you order, or export directly to Walmart Sparky AI.
+                  </p>
+                </div>
+
+                {/* Primary Grocery Action Buttons */}
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+                  {/* Walmart Sparky AI Export Button */}
+                  <button
+                    onClick={() => {
+                      setAiSparkyOptimizedText('');
+                      setSparkyModalOpen(true);
+                    }}
+                    className="col-span-2 sm:col-span-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <span>Walmart Sparky AI Text List</span>
+                  </button>
+
+                  {/* Firebase AI Logic Smart Consolidate Button */}
+                  <button
+                    onClick={handleAiConsolidateGroceryList}
+                    disabled={isAiOrganizingGrocery}
+                    className="py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1.5"
+                  >
+                    {isAiOrganizingGrocery ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>AI Merging...</span>
+                      </>
+                    ) : (
+                      <>
+                        <BrainCircuit className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>AI Smart Merge</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Sync From Calendar */}
+                  <button
+                    onClick={syncAllPlannedMealsToGrocery}
+                    className="py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Sync Calendar</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Toggle for Adding Custom Item */}
+              <div className="pt-2 border-t border-stone-100 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddGroceryDrawer(!showAddGroceryDrawer)}
+                  className="text-xs font-bold text-emerald-700 flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{showAddGroceryDrawer ? 'Hide Custom Item Form' : 'Add Extra Item to Order'}</span>
+                </button>
+
+                {groceryItems.some((i) => i.checked) && (
+                  <button
+                    onClick={clearCheckedGroceries}
+                    className="text-xs font-bold text-rose-600 flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear Ordered ({groceryItems.filter((i) => i.checked).length})</span>
+                  </button>
+                )}
+              </div>
+
+              {showAddGroceryDrawer && (
+                <form
+                  onSubmit={handleAddCustomGrocery}
+                  className="pt-2 grid grid-cols-1 sm:grid-cols-12 gap-2"
+                >
+                  <input
+                    type="text"
+                    value={newGroceryName}
+                    onChange={(e) => setNewGroceryName(e.target.value)}
+                    placeholder="Item name (e.g., Milk, Paper Towels)..."
+                    className="sm:col-span-5 px-3.5 py-2 rounded-xl border border-stone-200 text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={newGroceryAmount}
+                    onChange={(e) => setNewGroceryAmount(e.target.value)}
+                    placeholder="Qty (e.g., 2 bags)"
+                    className="sm:col-span-3 px-3.5 py-2 rounded-xl border border-stone-200 text-sm"
+                  />
+                  <select
+                    value={newGroceryCategory}
+                    onChange={(e) => setNewGroceryCategory(e.target.value)}
+                    className="sm:col-span-2 px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white"
+                  >
+                    <option value="Produce & Veg">Produce & Veg</option>
+                    <option value="Meat & Seafood">Meat & Seafood</option>
+                    <option value="Dairy & Eggs">Dairy & Eggs</option>
+                    <option value="Pantry & Grains">Pantry & Grains</option>
+                    <option value="Spices & Condiments">Spices & Condiments</option>
+                  </select>
+                  <button
+                    type="submit"
+                    className="sm:col-span-2 py-2 px-3 rounded-xl bg-emerald-700 text-white text-xs font-bold"
+                  >
+                    Add
+                  </button>
+                </form>
+              )}
+            </div>
+
+            {/* Categorized Touch-Friendly Checklist */}
+            {groceryItems.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 text-center border border-stone-200 space-y-3">
+                <ShoppingCart className="w-9 h-9 text-stone-300 mx-auto" />
+                <h3 className="text-base font-bold text-stone-800">No groceries on your list yet</h3>
+                <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                  Tap &ldquo;Sync Calendar&rdquo; above or plan meals on the Meals tab to populate your weekly shopping list.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {Object.entries(groupedGroceries).map(([category, items]) => (
+                  <div
+                    key={category}
+                    className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden"
+                  >
+                    <div className="px-4 py-2.5 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+                      <h3 className="font-extrabold text-xs uppercase tracking-wider text-stone-700">
+                        {category}
+                      </h3>
+                      <span className="text-[11px] font-bold text-stone-500">
+                        {items.filter((i) => i.checked).length}/{items.length} ordered
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-stone-100">
+                      {items.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => toggleGroceryItem(item)}
+                          className={`px-4 py-3 flex items-center justify-between gap-3 cursor-pointer active:bg-emerald-50 transition-colors ${
+                            item.checked ? 'bg-stone-50/70' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {item.checked ? (
+                              <CheckCircle2 className="w-5 h-5 fill-emerald-600 text-white shrink-0" />
+                            ) : (
+                              <Circle className="w-5 h-5 text-stone-300 shrink-0" />
+                            )}
+                            <div className="min-w-0">
+                              <p
+                                className={`text-sm font-bold truncate ${
+                                  item.checked
+                                    ? 'line-through text-stone-400'
+                                    : 'text-stone-900'
+                                }`}
+                              >
+                                {item.name}
+                              </p>
+                              <p className="text-xs text-emerald-700 font-semibold truncate">
+                                {item.amount}
+                                {Array.isArray(item.fromMeals) && item.fromMeals.length > 0 && (
+                                  <span className="text-stone-400 font-normal">
+                                    {' '}
+                                    • {item.fromMeals.join(', ')}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteGroceryItem(item.id);
+                            }}
+                            className="p-1.5 text-stone-300 hover:text-rose-600 rounded-lg shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ===================================================================
+            TAB 4: MEAL HISTORY & 0-5 STAR FIREBASE AI TASTE EVALUATOR
+        =================================================================== */}
+        {activeTab === 'history' && (
+          <div className="space-y-4">
+            {/* Compact AI Taste Evaluator Card */}
+            <div className="bg-gradient-to-br from-stone-900 via-stone-800 to-emerald-950 rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-md space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-bold">
+                    <BrainCircuit className="w-4 h-4" />
+                    <span>Firebase AI Family Taste Evaluator</span>
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold">
+                    Rate Meals (0–5★) to Power New Suggestions
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => setManualHistoryModal(true)}
+                    className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 border border-white/15"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Log Meal</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleEvaluateTasteHistory(false)}
+                    disabled={isAnalyzingTaste}
+                    className="py-2 px-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-60 text-stone-950 text-xs font-extrabold flex items-center gap-1.5"
+                  >
+                    {isAnalyzingTaste ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Evaluating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <BrainCircuit className="w-3.5 h-3.5" />
+                        <span>Evaluate Taste</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => handleEvaluateTasteHistory(true)}
+                    disabled={isAnalyzingTaste || isGeneratingMeals}
+                    className="py-2 px-3.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 disabled:opacity-60 text-stone-950 text-xs font-extrabold flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Evaluate & Suggest Meals</span>
+                  </button>
+                </div>
+              </div>
+
+              {tasteProfile && (
+                <div className="pt-3 border-t border-white/15 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                  <div className="bg-white/10 rounded-xl p-3 space-y-1">
+                    <span className="font-bold text-amber-300 block">
+                      {tasteProfile.headline}
+                    </span>
+                    <p className="text-stone-200 line-clamp-3">{tasteProfile.summary}</p>
+                  </div>
+
+                  <div className="bg-white/10 rounded-xl p-3 space-y-1">
+                    <span className="font-bold text-emerald-300 block">Loved (4–5★)</span>
+                    <p className="text-stone-200">
+                      <strong>Proteins:</strong> {(tasteProfile.preferredProteins || []).join(', ')}
+                    </p>
+                    <p className="text-stone-200">
+                      <strong>Veggies:</strong> {(tasteProfile.preferredVeggies || []).join(', ')}
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 rounded-xl p-3 space-y-1.5">
+                    <span className="font-bold text-rose-300 block">Avoid (0–2★)</span>
+                    <p className="text-stone-200">
+                      {(tasteProfile.avoidList || []).join(', ') || 'None flagged'}
+                    </p>
+                    {(tasteProfile.suggestedMealPrompts || []).slice(0, 1).map((idea, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleGenerateBalancedMeals(idea)}
+                        disabled={isGeneratingMeals}
+                        className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-100 font-semibold flex items-center justify-between gap-1"
+                      >
+                        <span className="truncate">Try: {idea}</span>
+                        <ArrowRight className="w-3 h-3 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* History Rating Cards */}
+            {mealHistory.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 text-center border border-stone-200 space-y-2">
+                <History className="w-9 h-9 text-stone-300 mx-auto" />
+                <h3 className="text-base font-bold text-stone-800">No rated meals yet</h3>
+                <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                  Tap &ldquo;Rate ★&rdquo; on any meal card or mark a calendar dinner as eaten to rate it 0–5 stars.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {mealHistory.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-extrabold text-sm sm:text-base text-stone-900">
+                          {item.name}
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900">
+                          {item.calories} kcal
+                        </span>
+                        <span className="text-[11px] text-stone-400">
+                          {new Date(item.eatenAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {item.notes && (
+                        <p className="text-xs italic text-stone-600">&ldquo;{item.notes}&rdquo;</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-100">
+                      {renderStarRatingInput(item.rating, (newVal) =>
+                        updateHistoryRating(item, newVal)
+                      )}
+                      <button
+                        onClick={() => deleteHistoryItem(item.id)}
+                        className="p-1.5 text-stone-300 hover:text-rose-600 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* =====================================================================
+          FIXED MOBILE BOTTOM NAVIGATION BAR (THUMB-FRIENDLY PHONE UX)
+      ===================================================================== */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 px-2 py-1.5 grid grid-cols-4 gap-1 shadow-lg">
+        <button
+          onClick={() => setActiveTab('meals')}
+          className={`flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors ${
+            activeTab === 'meals' ? 'text-emerald-700 bg-emerald-50/80 font-extrabold' : 'text-stone-500 font-medium'
+          }`}
+        >
+          <Utensils className="w-5 h-5" />
+          <span className="text-[11px] mt-0.5">Meals ({meals.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('calendar')}
+          className={`flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors ${
+            activeTab === 'calendar' ? 'text-emerald-700 bg-emerald-50/80 font-extrabold' : 'text-stone-500 font-medium'
+          }`}
+        >
+          <Calendar className="w-5 h-5" />
+          <span className="text-[11px] mt-0.5">Plan ({calendarStats.count}/7)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('grocery')}
+          className={`flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors ${
+            activeTab === 'grocery' ? 'text-emerald-700 bg-emerald-50/80 font-extrabold' : 'text-stone-500 font-medium'
+          }`}
+        >
+          <ShoppingCart className="w-5 h-5" />
+          <span className="text-[11px] mt-0.5">Shop ({uncheckedGroceryCount})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors ${
+            activeTab === 'history' ? 'text-emerald-700 bg-emerald-50/80 font-extrabold' : 'text-stone-500 font-medium'
+          }`}
+        >
+          <History className="w-5 h-5" />
+          <span className="text-[11px] mt-0.5">Ratings ({mealHistory.length})</span>
+        </button>
+      </nav>
+
+      {/* =====================================================================
+          MODAL 0: WALMART SPARKY AI TEXT LIST GENERATOR (MOBILE BOTTOM SHEET)
+      ===================================================================== */}
+      {sparkyModalOpen && (
+        <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200 p-5 sm:p-6 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800">
+                  <Sparkles className="w-3 h-3" />
+                  Walmart Sparky AI Assistant Ready
+                </span>
+                <h3 className="text-lg font-extrabold text-stone-900 mt-1">
+                  Generate Text List for Walmart Sparky AI
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Copy and paste this list directly into Sparky AI on Walmart.com or the Walmart app to auto-fill your cart.
+                </p>
+              </div>
+              <button
+                onClick={() => setSparkyModalOpen(false)}
+                className="p-2 rounded-full bg-stone-100 text-stone-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Format Selector Pills */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                {[
+                  { id: 'sparky-chat', label: 'Sparky Chat Prompt' },
+                  { id: 'bullet', label: 'Simple Bullets' },
+                  { id: 'Comma', label: 'Comma List' }
+                ].map((fmt) => (
+                  <button
+                    key={fmt.id}
+                    onClick={() => {
+                      setAiSparkyOptimizedText('');
+                      setSparkyFormat(fmt.id);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                      sparkyFormat === fmt.id && !aiSparkyOptimizedText
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }`}
+                  >
+                    {fmt.label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleGenerateWalmartSparkyAI}
+                disabled={isOptimizingSparky}
+                className="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold flex items-center gap-1"
+              >
+                {isOptimizingSparky ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Converting to Store Packages...</span>
+                  </>
+                ) : (
+                  <>
+                    <BrainCircuit className="w-3.5 h-3.5" />
+                    <span>AI Convert to Store Sizes</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <label className="inline-flex items-center gap-2 text-xs text-stone-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={sparkyIncludeChecked}
+                onChange={(e) => {
+                  setAiSparkyOptimizedText('');
+                  setSparkyIncludeChecked(e.target.checked);
+                }}
+                className="rounded text-blue-600"
+              />
+              <span>Include items already checked off</span>
+            </label>
+
+            {/* Editable Textarea Preview */}
+            <textarea
+              rows={8}
+              value={sparkyExportText}
+              onChange={(e) => setAiSparkyOptimizedText(e.target.value)}
+              className="w-full p-3.5 rounded-2xl bg-stone-50 border border-stone-200 text-xs sm:text-sm font-mono text-stone-800 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+
+            {/* Copy Action Buttons */}
+            <div className="flex items-center gap-2.5 pt-1">
+              <button
+                onClick={() => copyTextToClipboard(sparkyExportText)}
+                className="flex-1 py-3 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-extrabold flex items-center justify-center gap-2 shadow-md"
+              >
+                {copiedSparky ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Copied for Walmart Sparky AI!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>Copy Text List for Sparky AI</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          MODAL 1: FULL RECIPE DETAILS & INSTRUCTIONS (BOTTOM SHEET ON PHONE)
+      ===================================================================== */}
+      {selectedRecipeModal && (
+        <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200 p-5 sm:p-7 space-y-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900">
+                    {selectedRecipeModal.calories} kcal / serving
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                    {selectedRecipeModal.veggieHighlight}
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-stone-900">
+                  {selectedRecipeModal.name}
+                </h2>
+              </div>
+
+              <button
+                onClick={() => setSelectedRecipeModal(null)}
+                className="p-2 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-stone-600 leading-relaxed">
+              {selectedRecipeModal.description}
+            </p>
+
+            {/* Macros Box */}
+            <div className="grid grid-cols-4 gap-3 bg-stone-50 p-4 rounded-2xl border border-stone-200 text-center">
+              <div>
+                <span className="text-xs text-stone-500 block">Protein</span>
+                <span className="text-lg font-extrabold text-rose-700">
+                  {selectedRecipeModal.macros?.protein}g
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-stone-500 block">Carbs</span>
+                <span className="text-lg font-extrabold text-amber-700">
+                  {selectedRecipeModal.macros?.carbs}g
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-stone-500 block">Fats</span>
+                <span className="text-lg font-extrabold text-sky-700">
+                  {selectedRecipeModal.macros?.fat}g
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-stone-500 block">Fiber</span>
+                <span className="text-lg font-extrabold text-emerald-700">
+                  {selectedRecipeModal.macros?.fiber}g
+                </span>
+              </div>
+            </div>
+
+            {/* Ingredients & Instructions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm uppercase tracking-wider text-stone-700">
+                  Ingredients ({selectedRecipeModal.servings || 4} Servings)
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  {(selectedRecipeModal.ingredients || []).map((ing, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-center justify-between py-1.5 border-b border-stone-100"
+                    >
+                      <span className="text-stone-800 font-medium">{ing.name}</span>
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                        {ing.amount}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm uppercase tracking-wider text-stone-700">
+                  Preparation Steps
+                </h3>
+                <ol className="space-y-3 text-sm text-stone-700">
+                  {(selectedRecipeModal.instructions || []).map((step, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <span className="leading-relaxed">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-stone-200 flex flex-wrap items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  const meal = selectedRecipeModal;
+                  setSelectedRecipeModal(null);
+                  setAssignModalMeal(meal);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold flex items-center gap-2"
+              >
+                <CalendarPlus className="w-4 h-4" />
+                <span>Plan This Meal on Calendar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          MODAL 2: ASSIGN MEAL TO DAY OF WEEK (BOTTOM SHEET ON PHONE)
+      ===================================================================== */}
+      {assignModalMeal && (
+        <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl border border-stone-200">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-emerald-700 uppercase">
+                  Schedule Family Dinner
+                </span>
+                <h3 className="text-lg font-extrabold text-stone-900 mt-0.5">
+                  {assignModalMeal.name}
+                </h3>
+              </div>
+              <button
+                onClick={() => setAssignModalMeal(null)}
+                className="p-1.5 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-stone-500">
+              Select a day of the week below. All recipe ingredients will also be synced to your Grocery List automatically.
+            </p>
+
+            <div className="grid grid-cols-1 gap-2">
+              {DAYS_OF_WEEK.map((day) => {
+                const existing = weeklyPlan[day]?.meal;
+                return (
+                  <button
+                    key={day}
+                    onClick={() => assignMealToDay(assignModalMeal, day, true)}
+                    className="w-full px-4 py-3 rounded-2xl border border-stone-200 hover:border-emerald-600 hover:bg-emerald-50/50 flex items-center justify-between transition-all text-left"
+                  >
+                    <div>
+                      <span className="font-bold text-sm text-stone-900 block">{day}</span>
+                      {existing && (
+                        <span className="text-xs text-stone-400">
+                          Currently: {existing.name}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                      <span>Assign</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          MODAL 3: LOG AS EATEN & RATE (0 - 5 STARS, BOTTOM SHEET ON PHONE)
+      ===================================================================== */}
+      {rateModalData && (
+        <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-stone-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-xs font-bold text-amber-600 uppercase">
+                  Family Meal Rating (0–5 Stars)
+                </span>
+                <h3 className="text-lg font-extrabold text-stone-900 mt-0.5">
+                  {rateModalData.meal.name}
+                </h3>
+              </div>
+              <button
+                onClick={() => setRateModalData(null)}
+                className="p-1.5 rounded-full bg-stone-100 text-stone-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-stone-700 block">
+                How much did the family enjoy this meal? (0 = Never again, 5 = Loved it!)
+              </label>
+              {renderStarRatingInput(rateModalData.rating, (r) =>
+                setRateModalData((prev) => ({ ...prev, rating: r }))
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-stone-700 block">
+                Tasting Notes for AI Chef (Optional)
+              </label>
+              <textarea
+                rows={3}
+                value={rateModalData.notes}
+                onChange={(e) =>
+                  setRateModalData((prev) => ({ ...prev, notes: e.target.value }))
+                }
+                placeholder="e.g., Kids loved the honey-garlic sauce and crispy broccoli! Next time less spice..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setRateModalData(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => logMealToHistory(rateModalData)}
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              >
+                <Check className="w-4 h-4" />
+                <span>Save Rating to History</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          MODAL 4: MANUALLY LOG A PAST FAMILY MEAL TO HISTORY
+      ===================================================================== */}
+      {manualHistoryModal && (
+        <ManualHistoryFormModal
+          onClose={() => setManualHistoryModal(false)}
+          onSubmit={logMealToHistory}
+          renderStarRatingInput={renderStarRatingInput}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// SUB-COMPONENT: MANUAL HISTORY ENTRY MODAL
+// ============================================================================
+function ManualHistoryFormModal({ onClose, onSubmit, renderStarRatingInput }) {
+  const [name, setName] = useState('');
+  const [calories, setCalories] = useState(880);
+  const [protein, setProtein] = useState(52);
+  const [veggieHighlight, setVeggieHighlight] = useState('Roasted Asparagus & Bell Peppers');
+  const [rating, setRating] = useState(4);
+  const [notes, setNotes] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onSubmit({
+      meal: {
+        name: name.trim(),
+        calories: Number(calories) || 880,
+        macros: { protein: Number(protein) || 50, carbs: 75, fat: 34, fiber: 10 },
+        veggieHighlight
+      },
+      rating,
+      notes
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-stone-200"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-extrabold text-stone-900">
+            Log a Past Family Meal
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-full bg-stone-100 text-stone-500"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-stone-700 block">Meal Name</label>
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., Grilled Chimichurri Steak with Sweet Potato"
+            className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-bold text-stone-700 block">Calories (kcal)</label>
+            <input
+              type="number"
+              value={calories}
+              onChange={(e) => setCalories(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-stone-700 block">Protein (g)</label>
+            <input
+              type="number"
+              value={protein}
+              onChange={(e) => setProtein(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-stone-700 block">Vegetables Included</label>
+          <input
+            type="text"
+            value={veggieHighlight}
+            onChange={(e) => setVeggieHighlight(e.target.value)}
+            className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-stone-700 block">
+            Rating (0 to 5 Stars)
+          </label>
+          {renderStarRatingInput(rating, setRating)}
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-stone-700 block">Family Notes</label>
+          <textarea
+            rows={2}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="What did you like or dislike about this meal?"
+            className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"
+          />
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold"
+          >
+            Log & Save Rating
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
