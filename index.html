@@ -140,10 +140,11 @@
                 800–1000 kcal
               </span>
             </div>
-            <p class="text-[11px] text-slate-500 truncate flex items-center gap-1">
-              <i data-lucide="sparkles" class="w-3 h-3 text-blue-600 inline shrink-0"></i>
-              <span id="ai-engine-status">Firebase AI Logic Ready</span>
-            </p>
+            <button id="open-ai-setup-modal-btn" type="button" class="text-[11px] text-slate-500 hover:text-blue-700 truncate flex items-center gap-1 group text-left">
+              <span id="ai-status-dot" class="w-2 h-2 rounded-full bg-sky-500 inline-block shrink-0"></span>
+              <span id="ai-engine-status" class="underline decoration-dotted underline-offset-2">Firebase AI Logic Ready</span>
+              <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded-md">Setup / Test</span>
+            </button>
           </div>
         </div>
 
@@ -569,6 +570,79 @@
   </div>
 
   <!-- =====================================================================
+       MODAL 5: FIREBASE AI LOGIC SETUP GUIDE & LIVE CONNECTION TESTER
+  ===================================================================== -->
+  <div id="ai-setup-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800">
+            <i data-lucide="sparkles" class="w-3 h-3"></i>
+            <span>Firebase AI Logic Diagnostics</span>
+          </span>
+          <h3 class="text-lg font-extrabold text-[#0f2547] mt-1">
+            How to Initialize Firebase AI Logic
+          </h3>
+        </div>
+        <button id="close-ai-setup-modal-btn" type="button" class="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Live Connection Test Box -->
+      <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <span class="text-xs font-extrabold text-slate-900 block">Project: <code class="text-blue-700">anon-5693a</code></span>
+            <span id="ai-diagnostic-status" class="text-[11px] text-slate-500">Tap "Test AI Connection" to verify your Firebase AI Logic setup.</span>
+          </div>
+          <button id="run-ai-diagnostic-btn" type="button" class="px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold shrink-0 shadow-sm">
+            Test AI Connection
+          </button>
+        </div>
+        <pre id="ai-diagnostic-output" class="hidden p-2.5 rounded-xl bg-slate-900 text-sky-200 text-[11px] font-mono whitespace-pre-wrap overflow-x-auto"></pre>
+      </div>
+
+      <!-- Checklist of Console Steps -->
+      <div class="space-y-2 text-xs text-slate-700">
+        <p class="font-extrabold text-[#0f2547] uppercase tracking-wider text-[11px]">
+          1. Enable in Firebase Console (Required Once)
+        </p>
+        <ol class="list-decimal list-inside space-y-1.5 bg-blue-50/60 p-3.5 rounded-2xl border border-blue-100 text-slate-700">
+          <li>Open the <strong>Firebase Console</strong> and select your project (<code>anon-5693a</code>).</li>
+          <li>In the left sidebar, go to <strong>Build &rarr; AI Logic</strong> (or <strong>Firebase AI Logic</strong>) and click <strong>Get started</strong>.</li>
+          <li>Choose <strong>Gemini Developer API</strong> and click <strong>Enable</strong> (this turns on the required Google AI / Vertex AI APIs for your API key).</li>
+          <li>Also ensure <strong>Build &rarr; Firestore Database</strong> and <strong>Build &rarr; Authentication &rarr; Anonymous</strong> are enabled so recipes save across reloads.</li>
+        </ol>
+      </div>
+
+      <!-- Code Reference -->
+      <div class="space-y-1.5 text-xs">
+        <p class="font-extrabold text-[#0f2547] uppercase tracking-wider text-[11px]">
+          2. Initialization Code (Already Active in This App)
+        </p>
+        <pre class="p-3 rounded-2xl bg-[#0f2547] text-sky-100 text-[11px] font-mono overflow-x-auto leading-relaxed">import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import {
+  getAI,
+  getGenerativeModel,
+  GoogleAIBackend,
+  Schema
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js";
+
+const app = initializeApp(firebaseConfig);
+
+// 1. Initialize Firebase AI Logic with GoogleAIBackend
+const ai = getAI(app, { backend: new GoogleAIBackend() });
+
+// 2. Create the GenerativeModel instance
+const model = getGenerativeModel(ai, {
+  model: "gemini-2.5-flash"
+});</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
        APPLICATION JAVASCRIPT & FIREBASE MODULE INTEGRATION
   ===================================================================== -->
   <script type="module">
@@ -622,11 +696,6 @@
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const auth = getAuth(app);
     const db = getFirestore(app);
-
-    // Dedicated Firebase App instance for Firebase AI Logic bound to user's config
-    const aiFirebaseApp =
-      getApps().find((a) => a.name === 'firebase-ai-logic-app') ||
-      initializeApp(userProvidedFirebaseConfig, 'firebase-ai-logic-app');
 
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'family-meal-planner-v1';
 
@@ -827,41 +896,103 @@
     // ========================================================================
     // 6. FIREBASE AI LOGIC (firebase-ai.js) + GEMINI FALLBACK
     // ========================================================================
-    async function callFirebaseAILogic(systemPrompt, userPrompt, responseSchema) {
-      const statusEl = document.getElementById('ai-engine-status');
+    let cachedFirebaseAI = null;
+    let cachedFirebaseAISchemaClass = null;
+    let lastFirebaseAIError = null;
 
-      // 1. Attempt Firebase AI Logic SDK via official gstatic ES module
-      try {
-        const firebaseAIModule = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-ai.js");
-        if (firebaseAIModule && firebaseAIModule.getAI && firebaseAIModule.getGenerativeModel) {
-          const backend = firebaseAIModule.GoogleAIBackend
-            ? new firebaseAIModule.GoogleAIBackend()
-            : undefined;
-          const aiInstance = backend
-            ? firebaseAIModule.getAI(aiFirebaseApp, { backend })
-            : firebaseAIModule.getAI(aiFirebaseApp);
-
-          const model = firebaseAIModule.getGenerativeModel(aiInstance, {
-            model: 'gemini-2.5-flash',
-            systemInstruction: systemPrompt,
-            generationConfig: {
-              responseMimeType: 'application/json',
-              responseSchema: responseSchema
-            }
-          });
-
-          const result = await model.generateContent(userPrompt);
-          const responseText = result?.response?.text ? result.response.text() : null;
-          if (responseText) {
-            if (statusEl) statusEl.textContent = 'Firebase AI Logic SDK';
-            return JSON.parse(responseText);
+    // Helper: Convert our JSON schema definitions into Firebase AI Logic `Schema` objects
+    // (Firebase AI Logic SDK rejects REST-only properties like `propertyOrdering`)
+    function buildFirebaseAISchema(node, SchemaClass) {
+      if (!node || !SchemaClass) return undefined;
+      const t = String(node.type || '').toUpperCase();
+      if (t === 'STRING') return SchemaClass.string();
+      if (t === 'INTEGER') return SchemaClass.integer ? SchemaClass.integer() : SchemaClass.number();
+      if (t === 'NUMBER') return SchemaClass.number();
+      if (t === 'BOOLEAN') return SchemaClass.boolean();
+      if (t === 'ARRAY') {
+        return SchemaClass.array({
+          items: buildFirebaseAISchema(node.items, SchemaClass)
+        });
+      }
+      if (t === 'OBJECT') {
+        const properties = {};
+        if (node.properties) {
+          for (const [key, val] of Object.entries(node.properties)) {
+            properties[key] = buildFirebaseAISchema(val, SchemaClass);
           }
         }
-      } catch (firebaseAiErr) {
-        console.debug('Firebase AI Logic SDK fallback triggered:', firebaseAiErr?.message);
+        return SchemaClass.object({ properties });
+      }
+      return undefined;
+    }
+
+    // Initialize Firebase AI Logic using a matching SDK version (12.6.0+) that includes `firebase-ai.js`
+    async function getOrInitFirebaseAI() {
+      if (cachedFirebaseAI) {
+        return { ai: cachedFirebaseAI, Schema: cachedFirebaseAISchemaClass };
       }
 
-      // 2. Fallback to Gemini API with exponential backoff
+      const [fbAppMod, fbAiMod] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js")
+      ]);
+
+      const existingApp = fbAppMod.getApps().find((a) => a.name === 'family-table-ai-app');
+      const aiApp = existingApp || fbAppMod.initializeApp(userProvidedFirebaseConfig, 'family-table-ai-app');
+
+      const backend = fbAiMod.GoogleAIBackend
+        ? new fbAiMod.GoogleAIBackend()
+        : undefined;
+
+      cachedFirebaseAI = backend
+        ? fbAiMod.getAI(aiApp, { backend })
+        : fbAiMod.getAI(aiApp);
+      cachedFirebaseAISchemaClass = fbAiMod.Schema || null;
+
+      return {
+        ai: cachedFirebaseAI,
+        getGenerativeModel: fbAiMod.getGenerativeModel,
+        Schema: cachedFirebaseAISchemaClass
+      };
+    }
+
+    async function callFirebaseAILogic(systemPrompt, userPrompt, responseSchema) {
+      const statusEl = document.getElementById('ai-engine-status');
+      const dotEl = document.getElementById('ai-status-dot');
+
+      // 1. Attempt official Firebase AI Logic Web SDK (`firebase-ai.js` v12.6.0)
+      try {
+        const fbAiMod = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js");
+        const { ai, Schema } = await getOrInitFirebaseAI();
+
+        const generationConfig = {
+          responseMimeType: 'application/json'
+        };
+        if (responseSchema && Schema) {
+          generationConfig.responseSchema = buildFirebaseAISchema(responseSchema, Schema);
+        }
+
+        const model = fbAiMod.getGenerativeModel(ai, {
+          model: 'gemini-2.5-flash',
+          systemInstruction: systemPrompt,
+          generationConfig
+        });
+
+        const result = await model.generateContent(userPrompt);
+        const responseText = result?.response?.text ? result.response.text() : null;
+        if (responseText) {
+          lastFirebaseAIError = null;
+          if (statusEl) statusEl.textContent = 'Firebase AI Logic Connected';
+          if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-600 inline-block shrink-0';
+          return JSON.parse(responseText);
+        }
+      } catch (firebaseAiErr) {
+        lastFirebaseAIError = firebaseAiErr?.message || String(firebaseAiErr);
+        console.warn('Firebase AI Logic SDK error (falling back to Gemini API):', lastFirebaseAIError);
+      }
+
+      // 2. Fallback to Gemini API with exponential backoff so the app keeps working
+      // even if Firebase AI Logic has not been enabled in the Firebase Console yet.
       const apiKey = "";
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
@@ -896,7 +1027,8 @@
           if (!text) {
             throw new Error('Empty response from AI model');
           }
-          if (statusEl) statusEl.textContent = 'Firebase AI Logic (Gemini)';
+          if (statusEl) statusEl.textContent = 'AI Active (Fallback Mode)';
+          if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-sky-400 inline-block shrink-0';
           return JSON.parse(text);
         } catch (err) {
           lastError = err;
@@ -2176,6 +2308,50 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
     document.getElementById('open-sparky-modal-btn')?.addEventListener('click', openSparkyModal);
     document.getElementById('close-sparky-modal-btn')?.addEventListener('click', () => {
       document.getElementById('sparky-modal').classList.add('hidden');
+    });
+
+    // Firebase AI Logic Setup & Diagnostic Modal Events
+    document.getElementById('open-ai-setup-modal-btn')?.addEventListener('click', () => {
+      const diagOut = document.getElementById('ai-diagnostic-output');
+      if (lastFirebaseAIError && diagOut) {
+        diagOut.classList.remove('hidden');
+        diagOut.textContent = `Last Firebase AI SDK message:\n${lastFirebaseAIError}`;
+      }
+      document.getElementById('ai-setup-modal')?.classList.remove('hidden');
+    });
+
+    document.getElementById('close-ai-setup-modal-btn')?.addEventListener('click', () => {
+      document.getElementById('ai-setup-modal')?.classList.add('hidden');
+    });
+
+    document.getElementById('run-ai-diagnostic-btn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('run-ai-diagnostic-btn');
+      const statusText = document.getElementById('ai-diagnostic-status');
+      const diagOut = document.getElementById('ai-diagnostic-output');
+      if (!btn || !statusText || !diagOut) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+      diagOut.classList.remove('hidden');
+      diagOut.textContent = 'Connecting to Firebase AI Logic (projectId: anon-5693a)...';
+
+      try {
+        const fbAiMod = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js");
+        const { ai } = await getOrInitFirebaseAI();
+        const model = fbAiMod.getGenerativeModel(ai, { model: 'gemini-2.5-flash' });
+        const result = await model.generateContent('Reply with the single word: CONNECTED');
+        const reply = result?.response?.text ? result.response.text().trim() : 'OK';
+
+        statusText.textContent = '✅ Firebase AI Logic is live and connected!';
+        diagOut.textContent = `Success! Model responded: "${reply}"\nBackend: GoogleAIBackend (gemini-2.5-flash)`;
+        document.getElementById('ai-engine-status').textContent = 'Firebase AI Logic Connected';
+      } catch (err) {
+        statusText.textContent = '⚠️ Firebase AI Logic needs to be enabled in your Firebase Console.';
+        diagOut.textContent = `Firebase AI Error:\n${err?.message || String(err)}\n\nFix: Go to Firebase Console -> Build -> AI Logic -> Get started -> Enable Gemini Developer API.`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test AI Connection';
+      }
     });
 
     document.querySelectorAll('.sparky-fmt-btn').forEach((btn) => {
