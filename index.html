@@ -613,6 +613,7 @@
           <li>In the left sidebar, go to <strong>Build &rarr; AI Logic</strong> (or <strong>Firebase AI Logic</strong>) and click <strong>Get started</strong>.</li>
           <li>Choose <strong>Gemini Developer API</strong> and click <strong>Enable</strong> (this turns on the required Google AI / Vertex AI APIs for your API key).</li>
           <li>Also ensure <strong>Build &rarr; Firestore Database</strong> and <strong>Build &rarr; Authentication &rarr; Anonymous</strong> are enabled so recipes save across reloads.</li>
+          <li class="text-blue-800 font-bold">CRITICAL FOR GITHUB / LOCAL TEST: Open your browser's Developer Tools Console (F12). Find the printed <code>AppCheck debug token: xxxx...</code>. Copy it, go to <strong>App Check &rarr; Apps</strong> in the Firebase Console, click the 3 dots next to your app, and select "Manage debug tokens" to paste it!</li>
         </ol>
       </div>
 
@@ -636,7 +637,7 @@ const ai = getAI(app, { backend: new GoogleAIBackend() });
 
 // 2. Create the GenerativeModel instance
 const model = getGenerativeModel(ai, {
-  model: "gemini-3.8-flash"
+  model: "gemini-2.5-flash"
 });</pre>
       </div>
     </div>
@@ -647,6 +648,10 @@ const model = getGenerativeModel(ai, {
   ===================================================================== -->
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      initializeAppCheck,
+      ReCaptchaEnterpriseProvider
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
     import {
       getAuth,
       signInAnonymously,
@@ -694,6 +699,22 @@ const model = getGenerativeModel(ai, {
         : userProvidedFirebaseConfig;
 
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+    // ========================================================================
+    // 2.5 APP CHECK DEBUGGING FOR GITHUB / LOCAL TESTING
+    // ========================================================================
+    // Enables the debug token to be printed in the browser console.
+    // Copy the token and paste it into Firebase Console -> App Check -> Apps -> Manage debug tokens.
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    try {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaEnterpriseProvider('6Ldummykey_replace_for_production'),
+        isTokenAutoRefreshEnabled: true
+      });
+    } catch (e) {
+      console.warn('AppCheck already initialized:', e);
+    }
+
     const auth = getAuth(app);
     const db = getFirestore(app);
 
@@ -932,13 +953,23 @@ const model = getGenerativeModel(ai, {
         return { ai: cachedFirebaseAI, Schema: cachedFirebaseAISchemaClass };
       }
 
-      const [fbAppMod, fbAiMod] = await Promise.all([
+      const [fbAppMod, fbAiMod, fbAppCheckMod] = await Promise.all([
         import("https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"),
-        import("https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js")
+        import("https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js"),
+        import("https://www.gstatic.com/firebasejs/12.6.0/firebase-app-check.js")
       ]);
 
       const existingApp = fbAppMod.getApps().find((a) => a.name === 'family-table-ai-app');
       const aiApp = existingApp || fbAppMod.initializeApp(userProvidedFirebaseConfig, 'family-table-ai-app');
+
+      try {
+        fbAppCheckMod.initializeAppCheck(aiApp, {
+          provider: new fbAppCheckMod.ReCaptchaEnterpriseProvider('6Ldummykey_replace_for_production'),
+          isTokenAutoRefreshEnabled: true
+        });
+      } catch (e) {
+        console.warn('AppCheck already initialized on aiApp:', e);
+      }
 
       const backend = fbAiMod.GoogleAIBackend
         ? new fbAiMod.GoogleAIBackend()
@@ -972,7 +1003,7 @@ const model = getGenerativeModel(ai, {
         }
 
         const model = fbAiMod.getGenerativeModel(ai, {
-          model: 'gemini-3.8-flash',
+          model: 'gemini-2.5-flash',
           systemInstruction: systemPrompt,
           generationConfig
         });
@@ -2296,12 +2327,12 @@ Convert culinary measurements (like "4 tbsp olive oil" or "2 cloves garlic") int
       try {
         const fbAiMod = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js");
         const { ai } = await getOrInitFirebaseAI();
-        const model = fbAiMod.getGenerativeModel(ai, { model: 'gemini-3.8-flash' });
+        const model = fbAiMod.getGenerativeModel(ai, { model: 'gemini-2.5-flash' });
         const result = await model.generateContent('Reply with the single word: CONNECTED');
         const reply = result?.response?.text ? result.response.text().trim() : 'OK';
 
         statusText.textContent = '✅ Firebase AI Logic is live and connected!';
-        diagOut.textContent = `Success! Model responded: "${reply}"\nBackend: GoogleAIBackend (gemini-3.8-flash)`;
+        diagOut.textContent = `Success! Model responded: "${reply}"\nBackend: GoogleAIBackend (gemini-2.5-flash)`;
         document.getElementById('ai-engine-status').textContent = 'Firebase AI Logic Connected';
       } catch (err) {
         statusText.textContent = '⚠️ Firebase AI Logic needs to be enabled in your Firebase Console.';
